@@ -1,13 +1,13 @@
 {
-    "name": "core-fe",
-    "version": "1.29.1",
+    "name": "@wonder/core-fe",
+    "version": "1.0.0",
     "main": "lib/index.js",
     "module": "lib/index.js",
     "types": "lib/index.d.ts",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/neowu/core-fe-project.git"
+        "url": "https://github.com/food-truck/core-fe-project"
     },
     "scripts": {
         "build": "node script/build.js",
