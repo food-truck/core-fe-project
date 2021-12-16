@@ -1,5 +1,6 @@
 import React from "react";
 import {Action, State} from "./reducer";
+import {Action as InterfaceAction, AnyAction} from "redux";
 import {useDispatch, useSelector} from "react-redux";
 
 type DeferLiteralArrayCheck<T> = T extends Array<string | number | boolean | null | undefined> ? T : never;
@@ -51,4 +52,13 @@ export function useBinaryAction<P extends any[], U, K>(actionCreator: (...args: 
 export function useObjectKeyAction<T extends object, K extends keyof T>(actionCreator: (arg: T) => Action<[T]>, objectKey: K): (objectValue: T[K]) => void {
     const dispatch = useDispatch();
     return React.useCallback((objectValue: T[K]) => dispatch(actionCreator({[objectKey]: objectValue} as T)), [dispatch, actionCreator, objectKey]);
+}
+
+export interface Dispatch<A extends InterfaceAction = AnyAction> {
+    <T extends A>(action: T): Promise<any>;
+}
+
+export function usePromise() {
+    const dispatch: Dispatch<any> = useDispatch();
+    return dispatch;
 }

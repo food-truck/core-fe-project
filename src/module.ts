@@ -1,4 +1,5 @@
 import {app} from "./app";
+import createPromiseMiddleware from "./createPromiseMiddleware";
 import {Exception} from "./Exception";
 import {Module, ModuleLifecycleListener} from "./platform/Module";
 import {ModuleProxy} from "./platform/ModuleProxy";
@@ -45,12 +46,15 @@ export function register<M extends Module<any, any>>(module: M): ModuleProxy<M> 
     return new ModuleProxy(module, actions);
 }
 
-export function* executeAction(actionName: string, handler: ActionHandler, ...payload: any[]): SagaGenerator {
+export function* executeAction(actionName: string, handler: ActionHandler, map = {}, ...payload: any[]): SagaGenerator {
+    const {resolve, reject} = createPromiseMiddleware();
     try {
-        yield* handler(...payload);
+        const ret = yield* handler(...payload);
+        resolve(map, actionName, ret);
     } catch (error) {
         const actionPayload = stringifyWithMask(app.loggerConfig?.maskedKeywords || [], "***", ...payload) || "[No Parameter]";
         captureError(error, actionName, {actionPayload});
+        reject(map, actionName, error);
     }
 }
 
