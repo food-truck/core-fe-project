@@ -3,7 +3,7 @@ export default function createPromiseMiddleware() {
     const middleware = () => (next: (arg0: any) => void) => (action: {type: string}) => {
         const {type} = action;
 
-        if (notLifecycle(type)) {
+        if (notModuleDefaultProperties(type)) {
             return new Promise((resolve, reject) => {
                 map[type] = {
                     resolve: wrapped.bind(null, type, resolve),
@@ -15,7 +15,7 @@ export default function createPromiseMiddleware() {
         }
     };
 
-    function notLifecycle(type: string | string[]) {
+    function notModuleDefaultProperties(type: string | string[]) {
         return !type?.includes("@@");
     }
 
