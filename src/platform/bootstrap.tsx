@@ -13,6 +13,8 @@ import {APIException} from "../Exception";
 import {isIEBrowser} from "../util/navigator-util";
 import {captureError, errorToException} from "../util/error-util";
 import {SagaGenerator, call, delay} from "../typed-saga";
+import {IdleDetector, idleTimeoutActions} from "..";
+import {DEFAULT_IDLE_TIMEOUT} from "../util/IdleDetector";
 
 /**
  * Configuration for frontend version check.
@@ -25,7 +27,7 @@ import {SagaGenerator, call, delay} from "../typed-saga";
 interface VersionConfig {
     onRemind: () => SagaGenerator;
     versionCheckURL: string; // Must be GET Method, returning whatever JSON
-    thresholdHours?: number; // Default: 24
+    thresholdInHour?: number; // Default: 24 hour
 }
 
 /**
@@ -47,6 +49,7 @@ interface BootstrapOption {
     browserConfig?: BrowserConfig;
     loggerConfig?: LoggerConfig;
     versionConfig?: VersionConfig;
+    idleTimeoutInSecond?: number; // Default: 5 min, never Idle if non-positive value given
 }
 
 export const LOGGER_ACTION = "@@framework/logger";
@@ -59,6 +62,7 @@ export function bootstrap(option: BootstrapOption): void {
     setupGlobalErrorHandler(option.errorListener);
     setupAppExitListener(option.loggerConfig?.serverURL);
     setupLocationChangeListener(option.browserConfig?.onLocationChange);
+    setupIdleTimeout(option.idleTimeoutInSecond ?? DEFAULT_IDLE_TIMEOUT);
     runBackgroundLoop(option.loggerConfig, option.versionConfig);
     renderRoot(option.componentType, option.rootContainer || injectRootContainer(), option.browserConfig?.navigationPreventionMessage || "Are you sure to leave current page?");
 }
@@ -134,12 +138,14 @@ function setupGlobalErrorHandler(errorListener: ErrorListener) {
 function renderRoot(EntryComponent: React.ComponentType, rootContainer: HTMLElement, navigationPreventionMessage: string) {
     ReactDOM.render(
         <Provider store={app.store}>
-            <ConnectedRouter history={app.browserHistory}>
-                <NavigationGuard message={navigationPreventionMessage} />
-                <ErrorBoundary>
-                    <EntryComponent />
-                </ErrorBoundary>
-            </ConnectedRouter>
+            <IdleDetector>
+                <ConnectedRouter history={app.browserHistory}>
+                    <NavigationGuard message={navigationPreventionMessage} />
+                    <ErrorBoundary>
+                        <EntryComponent />
+                    </ErrorBoundary>
+                </ConnectedRouter>
+            </IdleDetector>
         </Provider>,
         rootContainer
     );
@@ -183,6 +189,10 @@ function setupLocationChangeListener(listener?: (location: Location) => void) {
     }
 }
 
+function setupIdleTimeout(timeout: number) {
+    app.store.dispatch(idleTimeoutActions(timeout));
+}
+
 function runBackgroundLoop(loggerConfig?: LoggerConfig, updateReminderConfig?: VersionConfig) {
     app.logger.info({action: "@@ENTER"});
     app.loggerConfig = loggerConfig || null;
@@ -200,7 +210,7 @@ function runBackgroundLoop(loggerConfig?: LoggerConfig, updateReminderConfig?: V
             // Check if staying too long, then check if need refresh by comparing server-side checksum
             if (updateReminderConfig) {
                 const stayingHours = (Date.now() - lastChecksumTimestamp) / 3600 / 1000;
-                if (stayingHours > (updateReminderConfig.thresholdHours || 24)) {
+                if (stayingHours > (updateReminderConfig.thresholdInHour || 24)) {
                     const newChecksum = yield* call(fetchVersionChecksum, updateReminderConfig.versionCheckURL);
                     if (newChecksum) {
                         if (lastChecksum !== null && newChecksum !== lastChecksum) {
