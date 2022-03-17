@@ -1,5 +1,5 @@
 import {app} from "./app";
-import createPromiseMiddleware from "./createPromiseMiddleware";
+import createPromiseMiddleware, {map} from "./createPromiseMiddleware";
 import {Exception} from "./Exception";
 import {Module, ModuleLifecycleListener} from "./platform/Module";
 import {ModuleProxy} from "./platform/ModuleProxy";
@@ -46,7 +46,7 @@ export function register<M extends Module<any, any>>(module: M): ModuleProxy<M> 
     return new ModuleProxy(module, actions);
 }
 
-export function* executeAction(actionName: string, handler: ActionHandler, map = {}, ...payload: any[]): SagaGenerator {
+export function* executeAction(actionName: string, handler: ActionHandler, ...payload: any[]): SagaGenerator {
     const {resolve, reject} = createPromiseMiddleware();
     try {
         const ret = yield* handler(...payload);

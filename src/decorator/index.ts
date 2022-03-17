@@ -4,6 +4,7 @@ import {SagaGenerator} from "../typed-saga";
 import {State} from "../reducer";
 import {app} from "../app";
 import {stringifyWithMask} from "../util/json-util";
+import createPromiseMiddleware, {map} from "../createPromiseMiddleware";
 
 export {Interval} from "./Interval";
 export {Loading} from "./Loading";
@@ -33,7 +34,18 @@ export function createActionHandlerDecorator<RootState extends State = State>(in
             // The reason is, fn is created before module register(), and the actionName had not been attached then
             boundFn.actionName = (descriptor.value as any).actionName;
             boundFn.maskedParams = stringifyWithMask(app.loggerConfig?.maskedKeywords || [], "***", ...args) || "[No Parameter]";
-            yield* interceptor(boundFn, this as any);
+            const userCustomReturn = yield* interceptor(boundFn, this as any);
+            // let users can custom define descriptor' return
+            if (userCustomReturn && typeof userCustomReturn === "object") {
+                const {resolve, reject} = createPromiseMiddleware();
+                const {isResolve, isReject, resolveValue, rejectValue} = userCustomReturn;
+                if (isResolve) {
+                    resolve(map, boundFn.actionName, resolveValue);
+                }
+                if (isReject) {
+                    reject(map, boundFn.actionName, rejectValue);
+                }
+            }
         };
         return descriptor;
     };

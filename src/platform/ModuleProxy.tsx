@@ -10,7 +10,7 @@ import {Location} from "history";
 import {SagaGenerator} from "../typed-saga";
 
 let startupModuleName: string | null = null;
-const defaultMiddlewareMap = {};
+
 export class ModuleProxy<M extends Module<any, any>> {
     constructor(private module: M, private actions: ActionCreators<M>) {}
 
@@ -64,7 +64,7 @@ export class ModuleProxy<M extends Module<any, any>> {
                     this.lastDidUpdateSagaTask = app.sagaMiddleware.run(function* () {
                         const action = `${moduleName}/@@LOCATION_MATCHED`;
                         const startTime = Date.now();
-                        yield rawCall(executeAction, action, lifecycleListener.onLocationMatched.bind(lifecycleListener), defaultMiddlewareMap, currentRouteParams, currentLocation);
+                        yield rawCall(executeAction, action, lifecycleListener.onLocationMatched.bind(lifecycleListener), currentRouteParams, currentLocation);
                         app.logger.info({
                             action,
                             elapsedTime: Date.now() - startTime,
@@ -130,7 +130,7 @@ export class ModuleProxy<M extends Module<any, any>> {
 
                 const enterActionName = `${moduleName}/@@ENTER`;
                 const startTime = Date.now();
-                yield rawCall(executeAction, enterActionName, lifecycleListener.onEnter.bind(lifecycleListener), defaultMiddlewareMap, props);
+                yield rawCall(executeAction, enterActionName, lifecycleListener.onEnter.bind(lifecycleListener), props);
                 app.logger.info({
                     action: enterActionName,
                     elapsedTime: Date.now() - startTime,
@@ -144,7 +144,7 @@ export class ModuleProxy<M extends Module<any, any>> {
                         const initialRenderActionName = `${moduleName}/@@LOCATION_MATCHED`;
                         const startTime = Date.now();
                         const routeParams = props.match.params;
-                        yield rawCall(executeAction, initialRenderActionName, lifecycleListener.onLocationMatched.bind(lifecycleListener), defaultMiddlewareMap, routeParams, props.location);
+                        yield rawCall(executeAction, initialRenderActionName, lifecycleListener.onLocationMatched.bind(lifecycleListener), routeParams, props.location);
                         app.logger.info({
                             action: initialRenderActionName,
                             elapsedTime: Date.now() - startTime,

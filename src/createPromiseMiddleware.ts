@@ -1,5 +1,5 @@
+export const map = {};
 export default function createPromiseMiddleware() {
-    const map = {};
     const middleware = () => (next: (arg0: any) => void) => (action: {type: string}) => {
         const {type} = action;
 
