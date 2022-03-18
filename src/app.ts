@@ -19,6 +19,7 @@ interface App {
     readonly logger: LoggerImpl;
     loggerConfig: LoggerConfig | null;
     errorHandler: ErrorHandler;
+    actionMap: Record<any, any>;
 }
 
 export const app = createApp();
@@ -50,7 +51,7 @@ function createApp(): App {
         yield takeEvery("*", function* (action: Action<any>) {
             const handler = app.actionHandlers[action.type];
             if (handler) {
-                yield* executeAction(action.type, handler, map, ...action.payload);
+                yield* executeAction(action.type, handler, ...action.payload);
             }
         });
     });
@@ -63,5 +64,6 @@ function createApp(): App {
         logger: eventLogger,
         loggerConfig: null,
         *errorHandler() {},
+        actionMap: map,
     };
 }

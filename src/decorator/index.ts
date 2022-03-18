@@ -4,7 +4,7 @@ import {SagaGenerator} from "../typed-saga";
 import {State} from "../reducer";
 import {app} from "../app";
 import {stringifyWithMask} from "../util/json-util";
-import createPromiseMiddleware, {map} from "../createPromiseMiddleware";
+import createPromiseMiddleware from "../createPromiseMiddleware";
 
 export {Interval} from "./Interval";
 export {Loading} from "./Loading";
@@ -40,10 +40,10 @@ export function createActionHandlerDecorator<RootState extends State = State>(in
                 const {resolve, reject} = createPromiseMiddleware();
                 const {isResolve, isReject, resolveValue, rejectValue} = userCustomReturn;
                 if (isResolve) {
-                    resolve(map, boundFn.actionName, resolveValue);
+                    resolve(app.actionMap, boundFn.actionName, resolveValue);
                 }
                 if (isReject) {
-                    reject(map, boundFn.actionName, rejectValue);
+                    reject(app.actionMap, boundFn.actionName, rejectValue);
                 }
             }
         };

@@ -1,4 +1,5 @@
-import createPromiseMiddleware, {map} from "../createPromiseMiddleware";
+import {app} from "../app";
+import createPromiseMiddleware from "../createPromiseMiddleware";
 import {createActionHandlerDecorator} from "./index";
 
 /**
@@ -10,9 +11,9 @@ export function Log() {
         const {resolve, reject} = createPromiseMiddleware();
         try {
             const ret = yield* handler();
-            resolve(map, handler.actionName, ret);
+            resolve(app.actionMap, handler.actionName, ret);
         } catch (err) {
-            reject(map, handler.actionName, err);
+            reject(app.actionMap, handler.actionName, err);
         } finally {
             thisModule.logger.info({
                 action: handler.actionName,
