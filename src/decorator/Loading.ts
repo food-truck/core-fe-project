@@ -17,6 +17,7 @@ export function Loading(identifier: string = "global") {
         } catch (err) {
             yield put(loadingAction(false, identifier));
             reject(app.actionMap, handler.actionName, err);
+            throw err;
         } finally {
             yield put(loadingAction(false, identifier));
         }

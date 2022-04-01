@@ -18,6 +18,7 @@ export function RetryOnNetworkConnectionError(retryIntervalSecond: number = 3) {
                 resolve(app.actionMap, handler.actionName, ret);
                 break;
             } catch (e) {
+                reject(app.actionMap, handler.actionName, e);
                 if (e instanceof NetworkConnectionException) {
                     retryTime++;
                     app.logger.exception(
@@ -32,7 +33,6 @@ export function RetryOnNetworkConnectionError(retryIntervalSecond: number = 3) {
                 } else {
                     throw e;
                 }
-                reject(app.actionMap, handler.actionName, e);
             }
         }
     });

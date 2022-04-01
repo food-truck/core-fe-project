@@ -14,6 +14,7 @@ export function SilentOnNetworkConnectionError() {
             const ret = yield* handler();
             resolve(app.actionMap, handler.actionName, ret);
         } catch (e) {
+            reject(app.actionMap, handler.actionName, e);
             if (e instanceof NetworkConnectionException) {
                 app.logger.exception(
                     e,
@@ -26,7 +27,6 @@ export function SilentOnNetworkConnectionError() {
             } else {
                 throw e;
             }
-            reject(app.actionMap, handler.actionName, e);
         }
     });
 }

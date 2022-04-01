@@ -24,6 +24,7 @@ export function Mutex() {
                 resolve(app.actionMap, handler.actionName, ret);
             } catch (err) {
                 reject(app.actionMap, handler.actionName, err);
+                throw err;
             } finally {
                 lockTime = null;
             }

@@ -14,6 +14,7 @@ export function Log() {
             resolve(app.actionMap, handler.actionName, ret);
         } catch (err) {
             reject(app.actionMap, handler.actionName, err);
+            throw err;
         } finally {
             thisModule.logger.info({
                 action: handler.actionName,
