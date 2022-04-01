@@ -9,12 +9,11 @@ import createPromiseMiddleware from "../createPromiseMiddleware";
  */
 export function SilentOnNetworkConnectionError() {
     return createActionHandlerDecorator(function* (handler) {
-        const {resolve, reject} = createPromiseMiddleware();
+        const {resolve} = createPromiseMiddleware();
         try {
             const ret = yield* handler();
             resolve(app.actionMap, handler.actionName, ret);
         } catch (e) {
-            reject(app.actionMap, handler.actionName, e);
             if (e instanceof NetworkConnectionException) {
                 app.logger.exception(
                     e,

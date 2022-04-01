@@ -11,14 +11,13 @@ import createPromiseMiddleware from "../createPromiseMiddleware";
 export function RetryOnNetworkConnectionError(retryIntervalSecond: number = 3) {
     return createActionHandlerDecorator(function* (handler) {
         let retryTime = 0;
-        const {resolve, reject} = createPromiseMiddleware();
+        const {resolve} = createPromiseMiddleware();
         while (true) {
             try {
                 const ret = yield* handler();
                 resolve(app.actionMap, handler.actionName, ret);
                 break;
             } catch (e) {
-                reject(app.actionMap, handler.actionName, e);
                 if (e instanceof NetworkConnectionException) {
                     retryTime++;
                     app.logger.exception(

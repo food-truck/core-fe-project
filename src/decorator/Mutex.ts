@@ -18,13 +18,10 @@ export function Mutex() {
                 },
             });
         } else {
-            const {resolve, reject} = createPromiseMiddleware();
+            const {resolve} = createPromiseMiddleware();
             try {
                 const ret = yield* handler();
                 resolve(app.actionMap, handler.actionName, ret);
-            } catch (err) {
-                reject(app.actionMap, handler.actionName, err);
-                throw err;
             } finally {
                 lockTime = null;
             }

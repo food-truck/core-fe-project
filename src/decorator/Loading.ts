@@ -9,14 +9,11 @@ import {app} from "../app";
  */
 export function Loading(identifier: string = "global") {
     return createActionHandlerDecorator(function* (handler) {
-        const {resolve, reject} = createPromiseMiddleware();
+        const {resolve} = createPromiseMiddleware();
         try {
             yield put(loadingAction(true, identifier));
             const ret = yield* handler();
             resolve(app.actionMap, handler.actionName, ret);
-        } catch (err) {
-            reject(app.actionMap, handler.actionName, err);
-            throw err;
         } finally {
             yield put(loadingAction(false, identifier));
         }
