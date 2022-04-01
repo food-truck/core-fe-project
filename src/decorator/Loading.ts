@@ -15,7 +15,6 @@ export function Loading(identifier: string = "global") {
             const ret = yield* handler();
             resolve(app.actionMap, handler.actionName, ret);
         } catch (err) {
-            yield put(loadingAction(false, identifier));
             reject(app.actionMap, handler.actionName, err);
             throw err;
         } finally {
