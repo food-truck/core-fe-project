@@ -24,6 +24,7 @@ type HandlerInterceptor<RootState extends State = State> = (handler: ActionHandl
 
 /**
  * A helper for ActionHandler functions (Saga).
+ * remember to re-throw error in Decorator like loading decorator.
  */
 export function createActionHandlerDecorator<RootState extends State = State>(interceptor: HandlerInterceptor<RootState>): HandlerDecorator {
     return (target, propertyKey, descriptor) => {
