@@ -1,6 +1,7 @@
 import {NetworkConnectionException} from "../Exception";
 import {createActionHandlerDecorator} from "./index";
 import {app} from "../app";
+import createPromiseMiddleware from "../createPromiseMiddleware";
 
 /**
  * Do nothing (only create a warning log) if NetworkConnectionException is thrown.
@@ -8,8 +9,10 @@ import {app} from "../app";
  */
 export function SilentOnNetworkConnectionError() {
     return createActionHandlerDecorator(function* (handler) {
+        const {resolve} = createPromiseMiddleware();
         try {
-            yield* handler();
+            const ret = yield* handler();
+            resolve(app.actionMap, handler.actionName, ret);
         } catch (e) {
             if (e instanceof NetworkConnectionException) {
                 app.logger.exception(

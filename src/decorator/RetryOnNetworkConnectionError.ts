@@ -2,6 +2,7 @@ import {app} from "../app";
 import {NetworkConnectionException} from "../Exception";
 import {delay} from "redux-saga/effects";
 import {createActionHandlerDecorator} from "./index";
+import createPromiseMiddleware from "../createPromiseMiddleware";
 
 /**
  * Re-execute the action if NetworkConnectionException is thrown.
@@ -10,9 +11,11 @@ import {createActionHandlerDecorator} from "./index";
 export function RetryOnNetworkConnectionError(retryIntervalSecond: number = 3) {
     return createActionHandlerDecorator(function* (handler) {
         let retryTime = 0;
+        const {resolve} = createPromiseMiddleware();
         while (true) {
             try {
-                yield* handler();
+                const ret = yield* handler();
+                resolve(app.actionMap, handler.actionName, ret);
                 break;
             } catch (e) {
                 if (e instanceof NetworkConnectionException) {

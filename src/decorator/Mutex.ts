@@ -1,3 +1,5 @@
+import {app} from "../app";
+import createPromiseMiddleware from "../createPromiseMiddleware";
 import {createActionHandlerDecorator} from "./index";
 
 /**
@@ -16,9 +18,10 @@ export function Mutex() {
                 },
             });
         } else {
+            const {resolve} = createPromiseMiddleware();
             try {
-                lockTime = Date.now();
-                yield* handler();
+                const ret = yield* handler();
+                resolve(app.actionMap, handler.actionName, ret);
             } finally {
                 lockTime = null;
             }

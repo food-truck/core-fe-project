@@ -1,3 +1,5 @@
+import {app} from "../app";
+import createPromiseMiddleware from "../createPromiseMiddleware";
 import {createActionHandlerDecorator} from "./index";
 
 /**
@@ -6,8 +8,10 @@ import {createActionHandlerDecorator} from "./index";
 export function Log() {
     return createActionHandlerDecorator(function* (handler, thisModule) {
         const startTime = Date.now();
+        const {resolve} = createPromiseMiddleware();
         try {
-            yield* handler();
+            const ret = yield* handler();
+            resolve(app.actionMap, handler.actionName, ret);
         } finally {
             thisModule.logger.info({
                 action: handler.actionName,

@@ -7,6 +7,7 @@ import {Logger, LoggerConfig, LoggerImpl} from "./Logger";
 import {ActionHandler, ErrorHandler, executeAction} from "./module";
 import {Action, LOADING_ACTION, rootReducer, State} from "./reducer";
 import {captureError} from "./util/error-util";
+import createPromiseMiddleware from "./createPromiseMiddleware";
 
 declare const window: any;
 
@@ -18,6 +19,7 @@ interface App {
     readonly logger: LoggerImpl;
     loggerConfig: LoggerConfig | null;
     errorHandler: ErrorHandler;
+    actionMap: Record<any, any>;
 }
 
 export const app = createApp();
@@ -38,12 +40,13 @@ function composeWithDevTools(enhancer: StoreEnhancer): StoreEnhancer {
 }
 
 function createApp(): App {
+    const {middleware: promiseMiddleware, map} = createPromiseMiddleware();
     const browserHistory = createBrowserHistory();
     const eventLogger = new LoggerImpl();
     const sagaMiddleware = createSagaMiddleware({
         onError: (error, info) => captureError(error, "@@framework/detached-saga", {extraStacktrace: info.sagaStack}),
     });
-    const store: Store<State> = createStore(rootReducer(browserHistory), composeWithDevTools(applyMiddleware(routerMiddleware(browserHistory), sagaMiddleware)));
+    const store: Store<State> = createStore(rootReducer(browserHistory), composeWithDevTools(applyMiddleware(routerMiddleware(browserHistory), sagaMiddleware, promiseMiddleware)));
     sagaMiddleware.run(function* () {
         yield takeEvery("*", function* (action: Action<any>) {
             const handler = app.actionHandlers[action.type];
@@ -61,5 +64,6 @@ function createApp(): App {
         logger: eventLogger,
         loggerConfig: null,
         *errorHandler() {},
+        actionMap: map,
     };
 }

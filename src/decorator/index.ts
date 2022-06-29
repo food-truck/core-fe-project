@@ -4,6 +4,7 @@ import {SagaGenerator} from "../typed-saga";
 import {State} from "../reducer";
 import {app} from "../app";
 import {stringifyWithMask} from "../util/json-util";
+import createPromiseMiddleware from "../createPromiseMiddleware";
 
 export {Interval} from "./Interval";
 export {Loading} from "./Loading";
@@ -23,6 +24,7 @@ type HandlerInterceptor<RootState extends State = State> = (handler: ActionHandl
 
 /**
  * A helper for ActionHandler functions (Saga).
+ * remember to re-throw error in Decorator like loading decorator.
  */
 export function createActionHandlerDecorator<RootState extends State = State>(interceptor: HandlerInterceptor<RootState>): HandlerDecorator {
     return (target, propertyKey, descriptor) => {
@@ -33,7 +35,18 @@ export function createActionHandlerDecorator<RootState extends State = State>(in
             // The reason is, fn is created before module register(), and the actionName had not been attached then
             boundFn.actionName = (descriptor.value as any).actionName;
             boundFn.maskedParams = stringifyWithMask(app.loggerConfig?.maskedKeywords || [], "***", ...args) || "[No Parameter]";
-            yield* interceptor(boundFn, this as any);
+            const userCustomReturn = yield* interceptor(boundFn, this as any);
+            // let users can custom define descriptor' return
+            if (userCustomReturn && typeof userCustomReturn === "object") {
+                const {resolve, reject} = createPromiseMiddleware();
+                const {isResolve, isReject, resolveValue, rejectValue} = userCustomReturn;
+                if (isResolve) {
+                    resolve(app.actionMap, boundFn.actionName, resolveValue);
+                }
+                if (isReject) {
+                    reject(app.actionMap, boundFn.actionName, rejectValue);
+                }
+            }
         };
         return descriptor;
     };
