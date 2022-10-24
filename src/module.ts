@@ -3,7 +3,7 @@ import createPromiseMiddleware from "./createPromiseMiddleware";
 import {Exception} from "./Exception";
 import {Module, ModuleLifecycleListener} from "./platform/Module";
 import {ModuleProxy} from "./platform/ModuleProxy";
-import {Action, setStateAction} from "./reducer";
+import {Action, App, setStateAction, State} from "./reducer";
 import {SagaGenerator} from "./typed-saga";
 import {captureError} from "./util/error-util";
 import {stringifyWithMask} from "./util/json-util";
@@ -24,15 +24,15 @@ type ActionCreator<H> = H extends (...args: infer P) => SagaGenerator ? (...args
 type HandlerKeys<H> = {[K in keyof H]: H[K] extends (...args: any[]) => SagaGenerator ? K : never}[Exclude<keyof H, keyof ModuleLifecycleListener | keyof ErrorListener>];
 export type ActionCreators<H> = {readonly [K in HandlerKeys<H>]: ActionCreator<H[K]>};
 
-export function register<M extends Module<any, any>>(module: M): ModuleProxy<M> {
-    const moduleName: string = module.name;
+export function register<M extends Module<State, keyof App>>(module: M): ModuleProxy<M> {
+    const moduleName = module.name;
     if (!app.store.getState().app[moduleName]) {
         // To get private property
         app.store.dispatch(setStateAction(moduleName, module.initialState, `@@${moduleName}/@@init`));
     }
 
     // Transform every method into ActionCreator
-    const actions: any = {};
+    const actions = {} as ActionCreators<M>;
     getKeys(module).forEach((actionType) => {
         // Attach action name, for @Log / error handler reflection
         const method = module[actionType];
@@ -58,7 +58,7 @@ export function* executeAction(actionName: string, handler: ActionHandler, ...pa
     }
 }
 
-function getKeys<M extends Module<any, any>>(module: M) {
+function getKeys<M extends Module<State, keyof App>>(module: M) {
     // Do not use Object.keys(Object.getPrototypeOf(module)), because class methods are not enumerable
     const keys: string[] = [];
     for (const propertyName of Object.getOwnPropertyNames(Object.getPrototypeOf(module))) {

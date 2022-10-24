@@ -6,7 +6,7 @@ import {produce, enablePatches, enableES5} from "immer";
 import {app} from "../app";
 import {Logger} from "../Logger";
 import {TickIntervalDecoratorFlag} from "../module";
-import {navigationPreventionAction, setStateAction, State} from "../reducer";
+import {App, navigationPreventionAction, setStateAction, State} from "../reducer";
 
 enableES5();
 if (process.env.NODE_ENV === "development") {
@@ -15,15 +15,15 @@ if (process.env.NODE_ENV === "development") {
 
 export type ModuleLocation<State> = Location<Readonly<State> | undefined>;
 
-export interface ModuleLifecycleListener<RouteParam extends object = object, HistoryState extends object = object> {
+export interface ModuleLifecycleListener<RouteParam extends object = {}, HistoryState extends object = {}> {
     onEnter: (entryComponentProps?: any) => SagaGenerator;
     onDestroy: () => SagaGenerator;
     onLocationMatched: (routeParameters: RouteParam, location: Location<Readonly<HistoryState> | undefined>) => SagaGenerator;
     onTick: (() => SagaGenerator) & TickIntervalDecoratorFlag;
 }
 
-export class Module<RootState extends State, ModuleName extends keyof RootState["app"] & string, RouteParam extends object = object, HistoryState extends object = object> implements ModuleLifecycleListener<RouteParam, HistoryState> {
-    constructor(readonly name: ModuleName, readonly initialState: RootState["app"][ModuleName]) {}
+export class Module<RootState extends State, ModuleName extends keyof App, RouteParam extends object = {}, HistoryState extends object = {}> implements ModuleLifecycleListener<RouteParam, HistoryState> {
+    constructor(readonly name: ModuleName, readonly initialState: App[ModuleName]) {}
 
     *onEnter(entryComponentProps: any): SagaGenerator {
         /**
@@ -52,7 +52,7 @@ export class Module<RootState extends State, ModuleName extends keyof RootState[
          */
     }
 
-    get state(): Readonly<RootState["app"][ModuleName]> {
+    get state(): Readonly<App[ModuleName]> {
         return this.rootState.app[this.name];
     }
 
@@ -68,12 +68,12 @@ export class Module<RootState extends State, ModuleName extends keyof RootState[
         app.store.dispatch(navigationPreventionAction(isPrevented));
     }
 
-    setState<K extends keyof RootState["app"][ModuleName]>(stateOrUpdater: ((state: RootState["app"][ModuleName]) => void) | Pick<RootState["app"][ModuleName], K> | RootState["app"][ModuleName]): void {
+    setState<K extends keyof App[ModuleName]>(stateOrUpdater: ((state: App[ModuleName]) => void) | Pick<App[ModuleName], K> | App[ModuleName]): void {
         if (typeof stateOrUpdater === "function") {
             const originalState = this.state;
-            const updater = stateOrUpdater as (state: RootState["app"][ModuleName]) => void;
+            const updater = stateOrUpdater;
             let patchDescriptions: string[] | undefined;
-            const newState = produce<Readonly<RootState["app"][ModuleName]>, RootState["app"][ModuleName]>(
+            const newState = produce<Readonly<App[ModuleName]>, App[ModuleName]>(
                 originalState,
                 (draftState) => {
                     // Wrap into a void function, in case updater() might return anything
@@ -91,8 +91,8 @@ export class Module<RootState extends State, ModuleName extends keyof RootState[
                 app.store.dispatch(setStateAction(this.name, newState, description));
             }
         } else {
-            const partialState = stateOrUpdater as object;
-            this.setState((state: object) => Object.assign(state, partialState));
+            const partialState = stateOrUpdater;
+            this.setState((state) => Object.assign(state, partialState));
         }
     }
 

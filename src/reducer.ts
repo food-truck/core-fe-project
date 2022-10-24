@@ -8,6 +8,8 @@ interface LoadingState {
     [loading: string]: number;
 }
 
+export type App = Record<string, object>;
+
 export interface IdleState {
     timeout: number;
     state: "active" | "idle";
@@ -17,7 +19,7 @@ export interface State {
     loading: LoadingState;
     router: RouterState;
     navigationPrevented: boolean;
-    app: object;
+    app: App;
     idle: IdleState;
 }
 
@@ -30,25 +32,33 @@ export interface Action<P> extends ReduxAction<string> {
 }
 
 // Redux Action: SetState (to update state.app)
-interface SetStateActionPayload {
-    module: string;
-    state: any;
+interface ModuleStateActionPayload {
+    moduleName: string;
+    moduleState: any;
 }
 
-// state must be complete module state, not partial
-export function setStateAction(module: string, state: object, type: string): Action<SetStateActionPayload> {
+/**
+ * Dispatches an action. It is the only way to trigger a state change in `core-fe` lib.
+ *
+ * @param moduleName The module name of the target that you want to change.
+ *
+ * @param moduleState the new module data you want to set, and must be complete module state, not partial.
+ *
+ * @param type the type of the action's `type` tag
+ */
+export function setStateAction(moduleName: keyof App, moduleState: App[keyof App], type: string): Action<ModuleStateActionPayload> {
     return {
         type,
         name: SET_STATE_ACTION,
-        payload: {module, state},
+        payload: {moduleName, moduleState},
     };
 }
 
-function setStateReducer(state: State["app"] = {}, action: Action<any>): State["app"] {
+function setStateReducer(state: App = {}, action: Action<ModuleStateActionPayload>): App {
     // Use action.name for set state action, make type specifiable to make tracking/tooling easier
     if (action.name === SET_STATE_ACTION) {
-        const {module, state: moduleState} = action.payload as SetStateActionPayload;
-        return {...state, [module]: moduleState};
+        const {moduleName, moduleState} = action.payload;
+        return {...state, [moduleName]: moduleState};
     }
     return state;
 }

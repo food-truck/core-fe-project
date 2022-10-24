@@ -4,13 +4,13 @@ import {Task} from "redux-saga";
 import {delay, call as rawCall, take, select, cancel, fork} from "redux-saga/effects";
 import {app} from "../app";
 import {ActionCreators, executeAction} from "../module";
-import {IDLE_STATE_ACTION, navigationPreventionAction, State} from "../reducer";
+import {App, IDLE_STATE_ACTION, navigationPreventionAction, State} from "../reducer";
 import {Module, ModuleLifecycleListener} from "./Module";
 import {Location} from "history";
 
 let startupModuleName: string | null = null;
 
-export class ModuleProxy<M extends Module<any, any>> {
+export class ModuleProxy<M extends Module<State, keyof App>> {
     constructor(private module: M, private actions: ActionCreators<M>) {}
 
     getActions(): ActionCreators<M> {
@@ -18,7 +18,7 @@ export class ModuleProxy<M extends Module<any, any>> {
     }
 
     attachLifecycle<P extends object>(ComponentType: React.ComponentType<P>): React.ComponentType<P> {
-        const moduleName = this.module.name as string;
+        const moduleName = this.module.name;
         const lifecycleListener = this.module as ModuleLifecycleListener;
         const modulePrototype = Object.getPrototypeOf(lifecycleListener);
         const actions = this.actions as any;
