@@ -4,6 +4,15 @@ core-fe is a frontend framework based on react, redux, react-saga, it's designed
 
 [![Build Status](https://github.com/food-truck/core-fe-project/workflows/build/badge.svg)](https://github.com/food-truck/core-fe-project/actions)
 
+## Local Dev
+
+This project uses [pnpm](link=https://pnpm.io/) to manage the dependencies.
+
+- To install the dependencies, run `pnpm install`
+- To run the build script, run `pnpm build`
+- To publish to npm, run `pnpm publish`, which runs `pnpm publish` automatically before publish
+
+
 ## Basic Features:
 
 The whole website is split into **modules**, usually by routes.

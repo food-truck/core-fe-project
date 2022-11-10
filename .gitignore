@@ -1,7 +1,11 @@
 node_modules/
 build/
+dist/
+lib/
 /.idea
 *.iml
 .DS_Store
 .vscode
+*.tsbuildinfo
+
 .npmrc
