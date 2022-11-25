@@ -1,4 +1,4 @@
-import axios, {AxiosError, AxiosRequestConfig, Method} from "axios";
+import axios, {Axios, AxiosError, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse, Method} from "axios";
 import {APIException, NetworkConnectionException} from "../Exception";
 import {parseWithDate} from "./json-util";
 
@@ -90,3 +90,11 @@ export function urlParams(pattern: string, params: object): string {
     });
     return url;
 }
+
+export const setAjaxRequestInterceptor: AxiosInterceptorManager<AxiosRequestConfig>["use"] = (onFulfilled?, onRejected?, options?) => {
+    return ajaxClient.interceptors.request.use(onFulfilled, onRejected, options);
+};
+
+export const setAjaxResponseInterceptor: AxiosInterceptorManager<AxiosResponse>["use"] = (onFulfilled?, onRejected?, options?) => {
+    return ajaxClient.interceptors.response.use(onFulfilled, onRejected, options);
+};

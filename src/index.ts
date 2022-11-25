@@ -9,7 +9,7 @@ export {Module, ModuleLocation, ModuleLifecycleListener} from "./platform/Module
 
 export {async, AsyncOptions, AsyncErrorComponentProps} from "./util/async";
 export {captureError} from "./util/error-util";
-export {ajax, uri} from "./util/network";
+export {ajax, uri, setAjaxRequestInterceptor, setAjaxResponseInterceptor} from "./util/network";
 export {ErrorBoundary} from "./util/ErrorBoundary";
 export {IdleDetector, IdleDetectorContext} from "./util/IdleDetector";
 export {Route} from "./util/Route";
