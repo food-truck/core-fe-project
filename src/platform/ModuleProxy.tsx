@@ -54,16 +54,16 @@ export class ModuleProxy<M extends Module<any, any>> {
                  *  Do not use !== to compare locations.
                  *  Because in "connected-react-router", location from rootState.router.location is not equal to current history.location in reference.
                  */
-                if (currentLocation && currentRouteParams && !this.areLocationsPathNameEqual(currentLocation, prevLocation) && this.hasOwnLifecycle("onLocationPathnameMatched")) {
+                if (currentLocation && currentRouteParams && !this.areLocationsPathNameEqual(currentLocation, prevLocation) && this.hasOwnLifecycle("onPathnameMatched")) {
                     try {
                         this.lastDidUpdateSagaTask?.cancel();
                     } catch (e) {
                         // In rare case, it may throw error, just ignore
                     }
                     this.lastDidUpdateSagaTask = app.sagaMiddleware.run(function* () {
-                        const action = `${moduleName}/@@LOCATION_PATHNAME_MATCHED`;
+                        const action = `${moduleName}/@@PATHNAME_MATCHED`;
                         const startTime = Date.now();
-                        yield rawCall(executeAction, action, lifecycleListener.onLocationPathnameMatched.bind(lifecycleListener), currentRouteParams, currentLocation);
+                        yield rawCall(executeAction, action, lifecycleListener.onPathnameMatched.bind(lifecycleListener), currentRouteParams, currentLocation);
                         app.logger.info({
                             action,
                             elapsedTime: Date.now() - startTime,
@@ -176,12 +176,12 @@ export class ModuleProxy<M extends Module<any, any>> {
                     },
                 });
 
-                if (this.hasOwnLifecycle("onLocationPathnameMatched")) {
+                if (this.hasOwnLifecycle("onPathnameMatched")) {
                     if ("match" in props && "location" in props) {
-                        const initialRenderActionName = `${moduleName}/@@LOCATION_PATHNAME_MATCHED`;
+                        const initialRenderActionName = `${moduleName}/@@PATHNAME_MATCHED`;
                         const startTime = Date.now();
                         const routeParams = props.match.params;
-                        yield rawCall(executeAction, initialRenderActionName, lifecycleListener.onLocationPathnameMatched.bind(lifecycleListener), routeParams, props.location);
+                        yield rawCall(executeAction, initialRenderActionName, lifecycleListener.onPathnameMatched.bind(lifecycleListener), routeParams, props.location);
                         app.logger.info({
                             action: initialRenderActionName,
                             elapsedTime: Date.now() - startTime,
@@ -191,7 +191,7 @@ export class ModuleProxy<M extends Module<any, any>> {
                             },
                         });
                     } else {
-                        console.error(`[framework] Module component [${moduleName}] is non-route, use onEnter() instead of onLocationPathnameMatched()`);
+                        console.error(`[framework] Module component [${moduleName}] is non-route, use onEnter() instead of onPathnameMatched()`);
                     }
                 }
 
