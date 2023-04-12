@@ -19,6 +19,7 @@ export interface ModuleLifecycleListener<RouteParam extends object = object, His
     onEnter: (entryComponentProps?: any) => SagaGenerator;
     onDestroy: () => SagaGenerator;
     onLocationMatched: (routeParameters: RouteParam, location: Location<Readonly<HistoryState> | undefined>) => SagaGenerator;
+    onLocationPathnameMatched: (routeParameters: RouteParam, location: Location<Readonly<HistoryState> | undefined>) => SagaGenerator;
     onTick: (() => SagaGenerator) & TickIntervalDecoratorFlag;
 }
 
@@ -41,6 +42,13 @@ export class Module<RootState extends State, ModuleName extends keyof RootState[
         /**
          * Called when the attached component is a React-Route component and its Route location matches
          * It is called each time the location changes, as long as it still matches
+         */
+    }
+
+    *onLocationPathnameMatched(routeParam: RouteParam, location: ModuleLocation<HistoryState>): SagaGenerator {
+        /**
+         * Called when the attached component is a React-Route component and its Route location pathname matches
+         * It is called each time the location pathname changes, as long as it still matches
          */
     }
 

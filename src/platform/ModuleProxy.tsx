@@ -54,6 +54,36 @@ export class ModuleProxy<M extends Module<any, any>> {
                  *  Do not use !== to compare locations.
                  *  Because in "connected-react-router", location from rootState.router.location is not equal to current history.location in reference.
                  */
+                if (currentLocation && currentRouteParams && !this.areLocationsPathNameEqual(currentLocation, prevLocation) && this.hasOwnLifecycle("onLocationPathnameMatched")) {
+                    try {
+                        this.lastDidUpdateSagaTask?.cancel();
+                    } catch (e) {
+                        // In rare case, it may throw error, just ignore
+                    }
+                    this.lastDidUpdateSagaTask = app.sagaMiddleware.run(function* () {
+                        const action = `${moduleName}/@@LOCATION_PATHNAME_MATCHED`;
+                        const startTime = Date.now();
+                        yield rawCall(executeAction, action, lifecycleListener.onLocationPathnameMatched.bind(lifecycleListener), currentRouteParams, currentLocation);
+                        app.logger.info({
+                            action,
+                            elapsedTime: Date.now() - startTime,
+                            info: {
+                                // URL params should not contain any sensitive or complicated objects
+                                route_params: JSON.stringify(currentRouteParams),
+                                history_state: JSON.stringify(currentLocation.state),
+                            },
+                        });
+                    });
+                    app.store.dispatch(navigationPreventionAction(false));
+                }
+
+                /**
+                 * Only trigger onLocationMatched if current component is connected to <Route>, and location literally changed.
+                 *
+                 * CAVEAT:
+                 *  Do not use !== to compare locations.
+                 *  Because in "connected-react-router", location from rootState.router.location is not equal to current history.location in reference.
+                 */
                 if (currentLocation && currentRouteParams && !this.areLocationsEqual(currentLocation, prevLocation) && this.hasOwnLifecycle("onLocationMatched")) {
                     try {
                         this.lastDidUpdateSagaTask?.cancel();
@@ -117,6 +147,10 @@ export class ModuleProxy<M extends Module<any, any>> {
                 return a.pathname === b.pathname && a.search === b.search && a.hash === b.hash && a.key === b.key && a.state === b.state;
             };
 
+            private areLocationsPathNameEqual = (a: Location, b: Location): boolean => {
+                return a.pathname === b.pathname;
+            };
+
             private hasOwnLifecycle = (methodName: keyof ModuleLifecycleListener): boolean => {
                 return Object.prototype.hasOwnProperty.call(modulePrototype, methodName);
             };
@@ -141,6 +175,25 @@ export class ModuleProxy<M extends Module<any, any>> {
                         component_props: JSON.stringify(props),
                     },
                 });
+
+                if (this.hasOwnLifecycle("onLocationPathnameMatched")) {
+                    if ("match" in props && "location" in props) {
+                        const initialRenderActionName = `${moduleName}/@@LOCATION_PATHNAME_MATCHED`;
+                        const startTime = Date.now();
+                        const routeParams = props.match.params;
+                        yield rawCall(executeAction, initialRenderActionName, lifecycleListener.onLocationPathnameMatched.bind(lifecycleListener), routeParams, props.location);
+                        app.logger.info({
+                            action: initialRenderActionName,
+                            elapsedTime: Date.now() - startTime,
+                            info: {
+                                route_params: JSON.stringify(props.match.params),
+                                history_state: JSON.stringify(props.location.state),
+                            },
+                        });
+                    } else {
+                        console.error(`[framework] Module component [${moduleName}] is non-route, use onEnter() instead of onLocationPathnameMatched()`);
+                    }
+                }
 
                 if (this.hasOwnLifecycle("onLocationMatched")) {
                     if ("match" in props && "location" in props) {
