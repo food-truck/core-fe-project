@@ -1,11 +1,12 @@
 import React from "react";
-import {app, logger} from "../app";
+import {app} from "../app";
 import {loadingAction} from "../reducer";
 import {captureError, errorToException} from "./error-util";
 
 type ReactComponentKeyOf<T> = {[P in keyof T]: T[P] extends React.ComponentType<any> ? P : never}[keyof T];
 
 export interface AsyncOptions {
+    moduleName?: string;
     loadingIdentifier?: string;
     LoadingComponent?: React.ComponentType;
     ErrorComponent?: React.ComponentType<AsyncErrorComponentProps>;
@@ -23,7 +24,7 @@ interface WrapperComponentState {
 
 const ASYNC_LOAD_ACTION = "@@framework/async-import";
 
-export function async<T, K extends ReactComponentKeyOf<T>>(resolve: () => Promise<T>, component: K, {LoadingComponent, loadingIdentifier, ErrorComponent}: AsyncOptions = {}): T[K] {
+export function async<T, K extends ReactComponentKeyOf<T>>(resolve: () => Promise<T>, component: K, {moduleName, LoadingComponent, loadingIdentifier, ErrorComponent}: AsyncOptions = {}): T[K] {
     return class AsyncWrapperComponent extends React.PureComponent<{}, WrapperComponentState> {
         constructor(props: {}) {
             super(props);
@@ -35,21 +36,22 @@ export function async<T, K extends ReactComponentKeyOf<T>>(resolve: () => Promis
         }
 
         loadComponentWithAutoRetry = async (maxRetryTime: number) => {
-            let retryTime = 0;
+            let retryCount = 0;
+            const startTime = Date.now();
 
             const loadChunk = async () => {
-                const startTime = Date.now();
                 try {
                     const moduleExports = await resolve();
                     this.setState({Component: moduleExports[component] as any});
                 } catch (e) {
-                    if (retryTime++ < maxRetryTime) {
-                        logger.warn({
+                    if (retryCount++ < maxRetryTime) {
+                        app.logger.warn({
                             action: ASYNC_LOAD_ACTION,
                             elapsedTime: Date.now() - startTime,
                             errorCode: "LOAD_CHUNK_FAILURE_RETRY",
                             errorMessage: errorToException(e).message,
-                            info: {retry_time: retryTime.toString()},
+                            context: {module_name: moduleName},
+                            stats: {retry_count: retryCount},
                         });
                         await loadChunk();
                     } else {
@@ -67,6 +69,11 @@ export function async<T, K extends ReactComponentKeyOf<T>>(resolve: () => Promis
                 this.setState({error: e});
             } finally {
                 app.store.dispatch(loadingAction(false, loadingIdentifier));
+                app.logger.info({
+                    action: ASYNC_LOAD_ACTION,
+                    elapsedTime: Date.now() - startTime,
+                    context: {module_name: moduleName},
+                });
             }
         };
 

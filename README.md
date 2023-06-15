@@ -2,18 +2,19 @@
 
 core-fe is a frontend framework based on react, redux, react-saga, it's designed to support our own projects.
 
-[![Build Status](https://github.com/food-truck/core-fe-project/workflows/build/badge.svg)](https://github.com/food-truck/core-fe-project/actions)
+[![Build Status](https://github.com/neowu/core-fe-project/workflows/build/badge.svg)](https://github.com/neowu/core-fe-project/actions)
+[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/neowu/core-fe-project.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/neowu/core-fe-project/context:javascript)
 
 ## Local Dev
 
-This project uses [pnpm](link=https://pnpm.io/) to manage the dependencies.
+This project uses [pnpm](https://pnpm.io/) to manage the dependencies.
 
 - To install the dependencies, run `pnpm install`
 - To run the build script, run `pnpm build`
-- To publish to npm, run `pnpm publish`, which runs `pnpm publish` automatically before publish
+- To publish to npm, run `pnpm publish`, which runs `pnpm build` automatically before publish
 
 
-## Basic Features:
+## Basic Features
 
 The whole website is split into **modules**, usually by routes.
 
@@ -25,13 +26,13 @@ To extend module features, modules can also implement its own lifecycle actions,
 
 ## Advanced Features
 
-(1) Global error handler
+- global error-handler
 
-(2) Event log collector
+- event collector
 
-(3) Built-in decorator
+- action decorator
 
-## Core API:
+## Core API
 
 - startApp
 
