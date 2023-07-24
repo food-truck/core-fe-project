@@ -16,7 +16,7 @@ type HandlerInterceptor<RootState extends State = State> = (handler: ActionHandl
 export function createActionHandlerDecorator<
     RootState extends State = State,
     This extends Module<RootState, string> = Module<RootState, string>,
-    Fn extends (this: This, ...args: any[]) => SagaGenerator = ActionHandler
+    Fn extends (this: This, ...args: any[]) => SagaGenerator = ActionHandler,
 >(interceptor: HandlerInterceptor<RootState>) {
     return (fn: Fn, context: ClassMethodDecoratorContext<This, Fn>) => {
         return function* (this: This, ...args: any[]): SagaGenerator {
