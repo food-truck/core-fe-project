@@ -1,22 +1,21 @@
-import {ConnectedRouter} from "connected-react-router";
-import {Location} from "history";
 import React from "react";
 import {createRoot} from "react-dom/client";
+import {ConnectedRouter} from "connected-react-router";
 import {Provider} from "react-redux";
-import {app} from "../app";
+import axios from "axios";
 import {NavigationGuard} from "./NavigationGuard";
-import {LoggerConfig} from "../Logger";
-import {ErrorListener, executeAction} from "../module";
+import {app} from "../app";
+import {executeAction, type ErrorListener} from "../module";
+import {idleTimeoutActions} from "../reducer";
+import {APIException} from "../Exception";
+import {call, delay, type SagaGenerator} from "../typed-saga";
 import {ErrorBoundary} from "../util/ErrorBoundary";
 import {ajax} from "../util/network";
-import {APIException} from "../Exception";
-import {isIEBrowser} from "../util/navigator-util";
+import {isBrowserSupported} from "../util/navigator-util";
 import {captureError, errorToException} from "../util/error-util";
-import {SagaGenerator, call, delay} from "../typed-saga";
-import {IdleDetector, idleTimeoutActions} from "..";
-import {DEFAULT_IDLE_TIMEOUT} from "../util/IdleDetector";
-import {SagaIterator} from "redux-saga";
-import axios, {AxiosRequestConfig} from "axios";
+import {DEFAULT_IDLE_TIMEOUT, IdleDetector} from "../util/IdleDetector";
+import type {Location} from "history";
+import type {LoggerConfig} from "../Logger";
 
 /**
  * Configuration for frontend version check.
@@ -30,12 +29,12 @@ interface VersionCheckConfig {
 
 /**
  * Configuration for browser related features.
- * - onIE: Alert to user or redirect when using IE browser, because framework does not support IE.
+ * - onOldBrowserDetected: Alert to user or redirect when using unsupported legacy browser.
  * - onLocationChange: A global event handler for any location change events.
  * - navigationPreventionMessage: Only useful if you are leaving some page, whose "setNavigationPrevented" is toggled as true.
  */
 interface BrowserConfig {
-    onIE?: () => void;
+    onOldBrowserDetected?: () => void;
     onLocationChange?: (location: Location) => void;
     navigationPreventionMessage?: string;
 }
@@ -56,7 +55,7 @@ export const GLOBAL_ERROR_ACTION = "@@framework/global";
 export const GLOBAL_PROMISE_REJECTION_ACTION = "@@framework/promise-rejection";
 
 export function bootstrap(option: BootstrapOption): void {
-    detectIEBrowser(option.browserConfig?.onIE);
+    detectOldBrowser(option.browserConfig?.onOldBrowserDetected);
     setupGlobalErrorHandler(option.errorListener);
     setupAppExitListener(option.loggerConfig?.serverURL);
     setupLocationChangeListener(option.browserConfig?.onLocationChange);
@@ -65,19 +64,19 @@ export function bootstrap(option: BootstrapOption): void {
     renderRoot(option.componentType, option.rootContainer || injectRootContainer(), option.browserConfig?.navigationPreventionMessage || "Are you sure to leave current page?");
 }
 
-function detectIEBrowser(onIE?: () => void) {
-    if (isIEBrowser()) {
-        if (onIE) {
-            onIE();
+function detectOldBrowser(onOldBrowserDetected?: () => void) {
+    if (!isBrowserSupported()) {
+        if (onOldBrowserDetected) {
+            onOldBrowserDetected();
         } else {
-            let ieAlertMessage: string;
+            let alertMessage: string;
             const navigatorLanguage = navigator.languages ? navigator.languages[0] : navigator.language;
             if (navigatorLanguage.startsWith("zh")) {
-                ieAlertMessage = "对不起，本网站不支持 IE 浏览器\n请使用 Chrome/Firefox/360 浏览器再访问";
+                alertMessage = "对不起，您的浏览器版本太老不支持\n请使用最新版的浏览器再访问";
             } else {
-                ieAlertMessage = "This website does not support IE browser.\nPlease use Chrome/Safari/Firefox to visit.\nSorry for the inconvenience.";
+                alertMessage = "Your browser is not supported.\nPlease upgrade your browser to latest and visit again.\nSorry for the inconvenience.";
             }
-            alert(ieAlertMessage);
+            alert(alertMessage);
         }
         // After that, the following code may still run
     }
@@ -87,7 +86,7 @@ function setupGlobalErrorHandler(errorListener: ErrorListener) {
     app.errorHandler = errorListener.onError.bind(errorListener);
     window.addEventListener(
         "error",
-        (event) => {
+        event => {
             try {
                 const analyzeByTarget = (): string => {
                     if (event.target && event.target !== window) {
@@ -116,7 +115,7 @@ function setupGlobalErrorHandler(errorListener: ErrorListener) {
     );
     window.addEventListener(
         "unhandledrejection",
-        (event) => {
+        event => {
             try {
                 captureError(event.reason, GLOBAL_PROMISE_REJECTION_ACTION);
             } catch (e) {

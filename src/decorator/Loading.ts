@@ -1,5 +1,5 @@
+import {createActionHandlerDecorator} from "./createActionHandlerDecorator";
 import {put} from "redux-saga/effects";
-import {createActionHandlerDecorator} from "./index";
 import {loadingAction} from "../reducer";
 import createPromiseMiddleware from "../createPromiseMiddleware";
 import {app} from "../app";

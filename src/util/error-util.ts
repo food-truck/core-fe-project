@@ -1,9 +1,9 @@
 import {Exception, JavaScriptException} from "../Exception";
-import {ErrorHandler} from "../module";
 import {app} from "../app";
-import {isIEBrowser} from "./navigator-util";
+import {isBrowserSupported} from "./navigator-util";
 import {spawn} from "../typed-saga";
 import {GLOBAL_ERROR_ACTION, GLOBAL_PROMISE_REJECTION_ACTION, sendEventLogs} from "../platform/bootstrap";
+import type {ErrorHandler} from "../module";
 
 let errorHandlerRunning = false;
 
@@ -80,6 +80,8 @@ export function* runUserErrorHandler(handler: ErrorHandler, exception: Exception
 }
 
 function specialErrorCode(exception: Exception, action: string, stacktrace?: string): string | null {
+    if (!isBrowserSupported()) return "UNSUPPORTED_BROWSER";
+
     const errorMessage = exception.message.toLowerCase();
     const ignoredPatterns = [
         // Network error while downloading JavaScript/CSS (webpack async loading)
@@ -97,10 +99,6 @@ function specialErrorCode(exception: Exception, action: string, stacktrace?: str
         {pattern: "access is denied for this document", errorCode: "BROWSER_LIMIT"},
     ];
 
-    if (isIEBrowser()) {
-        return "IE_BROWSER_ISSUE";
-    }
-
     const matchedPattern = ignoredPatterns.find(({pattern}) => errorMessage.includes(pattern));
     if (matchedPattern) {
         return `IGNORED_${matchedPattern.errorCode}_ISSUE`;
@@ -116,8 +114,8 @@ function specialErrorCode(exception: Exception, action: string, stacktrace?: str
 
 function isValidStacktrace(stacktrace?: string): boolean {
     if (stacktrace) {
-        const ignoredPatterns = ["chrome-extension://", "moz-extension://"];
-        if (ignoredPatterns.some((_) => stacktrace.includes(_))) {
+        const ignoredPatterns = ["chrome-extension://", "moz-extension://", "@user-script"];
+        if (ignoredPatterns.some(_ => stacktrace.includes(_))) {
             return false;
         }
 

@@ -1,7 +1,7 @@
 import React from "react";
-import {Action, State} from "./reducer";
-import {Action as InterfaceAction, AnyAction} from "redux";
+import {type Action as InterfaceAction, type AnyAction} from "redux";
 import {useDispatch, useSelector} from "react-redux";
+import type {Action, State} from "./reducer";
 
 type DeferLiteralArrayCheck<T> = T extends Array<string | number | boolean | null | undefined> ? T : never;
 
