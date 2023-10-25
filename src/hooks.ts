@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useMemo} from "react";
 import {type Action as InterfaceAction, type AnyAction} from "redux";
 import {useDispatch, useSelector} from "react-redux";
 import type {Action, State} from "./reducer";
@@ -66,4 +66,109 @@ export interface Dispatch<A extends InterfaceAction = AnyAction> {
 export function usePromise() {
     const dispatch: Dispatch<any> = useDispatch();
     return dispatch;
+}
+
+type Keys<S extends State, T extends keyof S["app"]> = keyof S["app"][T] & string;
+
+const getModuleState = <S extends State, T extends keyof S["app"] & string, P extends keyof S["app"][T]>(state: S, moduleStateName: T, keys: Array<P>): Pick<S["app"][T], P> => {
+    if (!state.app[moduleStateName]) {
+        return {} as S["app"][T];
+    }
+    return keys.reduce(
+        (moduleState, key) => {
+            moduleState[key] = state.app[moduleStateName][key];
+            return moduleState;
+        },
+        {} as S["app"][T]
+    );
+};
+
+const compareState = <T extends keyof State["app"], P extends keyof State["app"][T], S extends Pick<State["app"][T], P>>(left: S, right: S, keys: Array<P>): boolean => {
+    if (!left || !right) {
+        return true;
+    }
+    for (const key of keys) {
+        if (left[key] !== right[key]) {
+            return false;
+        }
+    }
+    return true;
+};
+
+export function useModuleState<
+    RS extends State,
+    M extends Partial<{
+        [key in keyof RS["app"]]: Array<Keys<RS, key>>;
+    }>,
+    T extends keyof M,
+>(
+    moduleKeys: M
+): {
+    [key in T]: key extends keyof RS["app"] ? Pick<RS["app"][key], M[key] extends Array<Keys<RS, key>> ? M[key][number] : never> : never;
+};
+export function useModuleState<RS extends State, M extends keyof RS["app"], T extends keyof RS["app"][M]>(moduleStateName: M, keys: Array<T>): Pick<RS["app"][M], T>;
+
+export function useModuleState<
+    RS extends State,
+    M extends
+        | {
+              [key in keyof RS["app"] as string]: Array<Keys<RS, key>>;
+          }
+        | (keyof RS["app"] & string),
+    T extends M extends keyof RS["app"] ? keyof RS["app"][M] : keyof M,
+    ModuleKeys extends Array<keyof RS["app"] & string>,
+    S extends Pick<RS["app"], keyof RS["app"]>,
+>(moduleNameOrKeys: M, keys?: Array<T>) {
+    const state = useSelector(
+        (state: RS) => {
+            if (typeof moduleNameOrKeys === "string") {
+                return getModuleState(state, moduleNameOrKeys, keys as any) as M extends keyof RS["app"] ? (T extends keyof RS["app"][M] ? Pick<RS["app"][M], T> : never) : never;
+            }
+            return (
+                Object.keys(
+                    moduleNameOrKeys as {
+                        [key in keyof RS["app"] as string]: Array<Keys<RS, key>>;
+                    }
+                ) as ModuleKeys
+            ).reduce(
+                (result, moduleStateName) => {
+                    result[moduleStateName] = getModuleState(
+                        state,
+                        moduleStateName,
+                        (
+                            moduleNameOrKeys as {
+                                [key in keyof RS["app"] as string]: Array<Keys<RS, key>>;
+                            }
+                        )[moduleStateName]
+                    ) as any;
+                    return result;
+                },
+                {} as {
+                    [key in keyof RS["app"]]: Pick<RS["app"][key], keyof RS["app"][key]>;
+                }
+            );
+        },
+        (left, right) => {
+            if (typeof moduleNameOrKeys === "string") {
+                moduleNameOrKeys;
+                return compareState(left, right, keys as any);
+            }
+
+            // return compareRootState(left as S, right as S, moduleNameOrKeys[moduleStateName] as Array<Keys<typeof moduleStateName>>);
+            return !(Object.keys(moduleNameOrKeys) as ModuleKeys).some(
+                moduleStateName =>
+                    !compareState(
+                        (left as S)[moduleStateName],
+                        (right as S)[moduleStateName],
+                        (
+                            moduleNameOrKeys as {
+                                [key in keyof RS["app"] as string]: Array<Keys<RS, key>>;
+                            }
+                        )[moduleStateName]
+                    )
+            );
+        }
+    );
+
+    return useMemo(() => state ?? {}, [state]);
 }

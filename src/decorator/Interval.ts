@@ -7,7 +7,7 @@ export interface OnTickMethodDecorator<Fn extends ActionHandler & TickIntervalDe
 /**
  * For *onTick() action only, to specify to tick interval in second.
  */
-export function Interval<Fn extends ActionHandler>(second: number) {
+export function Interval<Fn extends ActionHandler>(second: number = 5) {
     return function (target: Fn, _: OnTickMethodDecorator<Fn>) {
         Reflect.defineProperty(target, "tickInterval", {
             value: second,
