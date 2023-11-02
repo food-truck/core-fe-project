@@ -1,18 +1,9 @@
 import React, {useMemo} from "react";
 import {type Action as InterfaceAction, type AnyAction} from "redux";
 import {useDispatch, useSelector} from "react-redux";
-import type {Action, State} from "./reducer";
+import type {Action, State} from "../reducer";
 
 type DeferLiteralArrayCheck<T> = T extends Array<string | number | boolean | null | undefined> ? T : never;
-
-export function useLoadingStatus(identifier: string = "global"): boolean {
-    return useSelector((state: State) => state.loading[identifier] > 0);
-}
-
-interface IdleStatus {
-    idle: boolean;
-    startAt: number | null;
-}
 
 /**
  * Action parameters must be of primitive types, so that the dependency check can work well.
