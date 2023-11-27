@@ -1,4 +1,4 @@
-import React, {useMemo} from "react";
+import React from "react";
 import {type Action as InterfaceAction, type AnyAction} from "redux";
 import {useDispatch, useSelector} from "react-redux";
 import type {Action, State} from "../reducer";
