@@ -1,5 +1,5 @@
 {
-    "name": "core-fe",
+    "name": "@wonder/core-fe",
     "version": "1.7.0",
     "main": "lib/index.js",
     "module": "lib/index.js",
