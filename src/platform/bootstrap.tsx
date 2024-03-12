@@ -10,7 +10,7 @@ import {idleTimeoutActions} from "../reducer";
 import {APIException} from "../Exception";
 import {call, delay, type SagaGenerator} from "../typed-saga";
 import {ErrorBoundary} from "../util/ErrorBoundary";
-import {ajax} from "../util/network";
+import {uploadLog} from "../util/network";
 import {isBrowserSupported, isIOS} from "../util/navigator-util";
 import {captureError, errorToException} from "../util/error-util";
 import {DEFAULT_IDLE_TIMEOUT, IdleDetector} from "../util/IdleDetector";
@@ -233,7 +233,7 @@ export async function sendEventLogs(): Promise<void> {
                  * - Event server allows cross-origin request from current domain
                  * - Root-domain cookies, whose domain is set by current domain as ".abc.com", can be sent (withCredentials = true)
                  */
-                await ajax("POST", app.loggerConfig.serverURL, {}, {events: logs}, {withCredentials: true});
+                await uploadLog("POST", app.loggerConfig.serverURL, {}, {events: logs}, {withCredentials: true});
                 app.logger.emptyLastCollection();
             } catch (e) {
                 if (e instanceof APIException) {
