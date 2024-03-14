@@ -40,6 +40,7 @@ export interface LoggerConfig {
     slowStartupThresholdInSecond?: number; // Default: 5
     frequencyInSecond?: number; // Default: 20
     maskedKeywords?: RegExp[];
+    apiTracking?: boolean;
 }
 
 export interface Logger {

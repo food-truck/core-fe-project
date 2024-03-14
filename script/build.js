@@ -26,7 +26,7 @@ function checkCodeStyle() {
 
 function test() {
     console.info("run test ...");
-    return spawn("jest", ["--config", "config/jest.config.ts"], "test failed, please fix");
+    return spawn("jest", ["--config", "config/jest.config.js"], "test failed, please fix");
 }
 
 function lint() {
