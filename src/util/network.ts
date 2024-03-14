@@ -66,10 +66,12 @@ export async function uploadLog<Request, Response, Path extends string>(method: 
     const fullURL = urlParams(path, pathParams);
     const config: AxiosRequestConfig = {...extraConfig, method, url: fullURL};
 
-    if (method === "GET" || method === "DELETE") {
-        config.params = request;
-    } else if (method === "POST" || method === "PUT" || method === "PATCH") {
-        config.data = request;
+    if (request) {
+        if (method === "GET" || method === "DELETE") {
+            config.params = request;
+        } else if (method === "POST" || method === "PUT" || method === "PATCH") {
+            config.data = request;
+        }
     }
 
     config.headers = {
@@ -89,10 +91,12 @@ export async function ajax<Request, Response, Path extends string>(method: Metho
     const startTime = Date.now();
     const action = `api:${method}:${fullURL}`;
 
-    if (method === "GET" || method === "DELETE") {
-        config.params = request;
-    } else if (method === "POST" || method === "PUT" || method === "PATCH") {
-        config.data = request;
+    if (request) {
+        if (method === "GET" || method === "DELETE") {
+            config.params = request;
+        } else if (method === "POST" || method === "PUT" || method === "PATCH") {
+            config.data = request;
+        }
     }
 
     config.headers = {
