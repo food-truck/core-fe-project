@@ -27,7 +27,7 @@ function publish() {
     fs.copySync("README.md", "build/dist/README.md", {dereference: true});
     fs.copySync("src", "build/dist/src", {dereference: true});
     fs.copySync("./.npmrc", "build/dist/.npmrc", {dereference: true});
-    return spawn("npm", ["publish", "--registry=https://pkgs.dev.azure.com/foodtruckinc/Wonder/_packaging/npm-local/npm/registry/"], "publish failed, please fix", {cwd: "build/dist"});
+    return spawn("npm", ["publish", "--registry=https://pkgs.dev.azure.com/foodtruckinc/Wonder/_packaging/npm-local/npm/registry/"], "publish failed, please fix");
 }
 
 publish();
