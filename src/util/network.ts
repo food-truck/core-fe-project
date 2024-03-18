@@ -133,8 +133,8 @@ export async function ajax<Request, Response, Path extends string>(
                 action,
                 elapsedTime: Date.now() - startTime,
                 info: {
-                    errorCode,
-                    errorMessage,
+                    ...(errorCode ? {errorCode} : {}),
+                    ...(errorMessage ? {errorMessage} : {}),
                     [REQUEST_ID]: response.config.headers[REQUEST_ID],
                 },
             });

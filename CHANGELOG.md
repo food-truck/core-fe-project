@@ -1,3 +1,11 @@
+### 1.7.0-beta.2
+
+### 2024.3.18
+
+### Api tracking
+
+- Fixed, when API request success, if the errorCode and errorMessage is null, do not log it.
+
 ## 1.5.1.0-beta.1
 
 ### 2024.3.14
