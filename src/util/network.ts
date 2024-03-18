@@ -6,7 +6,13 @@ import {v4 as uuidv4} from "uuid";
 
 const REQUEST_ID = "x-request-id";
 
-export type PathParams<T extends string> = string extends T ? {[key: string]: string | number} : T extends `${infer Start}:${infer Param}/${infer Rest}` ? {[k in Param | keyof PathParams<Rest>]: string | number} : T extends `${infer Start}:${infer Param}` ? {[k in Param]: string | number} : {};
+export type PathParams<T extends string> = string extends T
+    ? {[key: string]: string | number}
+    : T extends `${infer Start}:${infer Param}/${infer Rest}`
+      ? {[k in Param | keyof PathParams<Rest>]: string | number}
+      : T extends `${infer Start}:${infer Param}`
+        ? {[k in Param]: string | number}
+        : {};
 
 export interface APIErrorResponse {
     id?: string | null;
@@ -34,8 +40,8 @@ const ajaxClient = axios.create({
 });
 
 ajaxClient.interceptors.response.use(
-    (response) => response,
-    (error) => {
+    response => response,
+    error => {
         if (axios.isAxiosError(error)) {
             const typedError = error as AxiosError<APIErrorResponse | undefined>;
             const requestURL = typedError.config?.url || "-";
@@ -62,7 +68,13 @@ ajaxClient.interceptors.response.use(
     }
 );
 
-export async function uploadLog<Request, Response, Path extends string>(method: Method, path: Path, pathParams: PathParams<Path>, request: Request, extraConfig: Partial<AxiosRequestConfig> = {}): Promise<Response> {
+export async function uploadLog<Request, Response, Path extends string>(
+    method: Method,
+    path: Path,
+    pathParams: PathParams<Path>,
+    request: Request,
+    extraConfig: Partial<AxiosRequestConfig> = {}
+): Promise<Response> {
     const fullURL = urlParams(path, pathParams);
     const config: AxiosRequestConfig = {...extraConfig, method, url: fullURL};
 
@@ -84,7 +96,13 @@ export async function uploadLog<Request, Response, Path extends string>(method: 
     return response.data;
 }
 
-export async function ajax<Request, Response, Path extends string>(method: Method, path: Path, pathParams: PathParams<Path>, request: Request, extraConfig: Partial<AxiosRequestConfig> = {}): Promise<Response> {
+export async function ajax<Request, Response, Path extends string>(
+    method: Method,
+    path: Path,
+    pathParams: PathParams<Path>,
+    request: Request,
+    extraConfig: Partial<AxiosRequestConfig> = {}
+): Promise<Response> {
     const fullURL = urlParams(path, pathParams);
     const config: AxiosRequestConfig = {...extraConfig, method, url: fullURL};
     const requestId = uuidv4();
@@ -115,8 +133,8 @@ export async function ajax<Request, Response, Path extends string>(method: Metho
                 action,
                 elapsedTime: Date.now() - startTime,
                 info: {
-                    errorCode,
-                    errorMessage,
+                    ...(errorCode ? {errorCode} : {}),
+                    ...(errorMessage ? {errorMessage} : {}),
                     [REQUEST_ID]: response.config.headers[REQUEST_ID],
                 },
             });
