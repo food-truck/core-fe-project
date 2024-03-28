@@ -1,21 +1,23 @@
-import {createActionHandlerDecorator} from "./createActionHandlerDecorator";
-import {put} from "redux-saga/effects";
-import {loadingAction} from "../reducer";
-import createPromiseMiddleware from "../createPromiseMiddleware";
-import {app} from "../app";
+import { setLoadingState } from "../storeActions";
 
 /**
  * To mark state.loading[identifier] during action execution.
  */
 export function Loading(identifier: string = "global") {
-    return createActionHandlerDecorator(function* (handler) {
-        const {resolve} = createPromiseMiddleware();
-        try {
-            yield put(loadingAction(true, identifier));
-            const ret = yield* handler();
-            resolve(app.actionMap, handler.actionName, ret);
-        } finally {
-            yield put(loadingAction(false, identifier));
-        }
-    });
+  return (originMethod: any, _context: ClassAccessorDecoratorContext): any => {
+    return async (...args: any) => {
+      setLoadingState({
+        identifier,
+        show: true,
+      });
+      try {
+        return await originMethod(...args);
+      } finally {
+        setLoadingState({
+          identifier,
+          show: false,
+        });
+      }
+    };
+  };
 }

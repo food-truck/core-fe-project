@@ -5,13 +5,10 @@ import type {State} from "../reducer";
 
 interface OwnProps {
     message: string;
-}
-
-interface StateProps {
     isPrevented: boolean;
 }
 
-interface Props extends OwnProps, StateProps, DispatchProp {}
+interface Props extends OwnProps {}
 
 class Component extends React.PureComponent<Props, State> {
     override componentDidUpdate(prevProps: Readonly<Props>): void {
@@ -27,6 +24,4 @@ class Component extends React.PureComponent<Props, State> {
     }
 }
 
-const mapStateToProps = (state: State): StateProps => ({isPrevented: state.navigationPrevented});
-
-export const NavigationGuard = connect(mapStateToProps)(Component);
+export const NavigationGuard = Component;
