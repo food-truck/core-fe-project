@@ -1,13 +1,10 @@
-import { push } from "redux-first-history";
-import { put } from "redux-saga/effects";
 import { produce, enablePatches } from "immer";
 import { app } from "../app";
-import { type State } from "../reducer";
 import type { Location } from "history";
 import type { TickIntervalDecoratorFlag } from "../module";
-import type { SagaGenerator } from "../typed-saga";
 import type { Logger } from "../Logger";
 import { setAppState, setNavigationPrevented } from "../storeActions";
+import { type State } from "../sliceStores";
 
 if (process.env.NODE_ENV === "development") enablePatches();
 
@@ -28,7 +25,7 @@ export class Module<
   HistoryState extends object = object
 > implements ModuleLifecycleListener<RouteParam, HistoryState>
 {
-  constructor(readonly name: ModuleName, readonly initialState: RootState["app"][ModuleName]) {}
+  constructor(readonly name: ModuleName, readonly initialState: RootState["app"][ModuleName]) { }
 
   async onEnter(entryComponentProps: any) {
     /**
@@ -65,13 +62,12 @@ export class Module<
   }
 
   get state(): Readonly<RootState["app"][ModuleName]> {
-    return app.store.getState().app[this.name];
+    return app.getState("app")[this.name];
   }
 
-  // TODO zustand版本
-  // get rootState(): Readonly<RootState> {
-  // return app.store.getState();
-  // }
+  get rootState(): Readonly<RootState> {
+    return app.store.getState() as RootState;
+  }
 
   get logger(): Logger {
     return app.logger;
@@ -99,19 +95,17 @@ export class Module<
         },
         process.env.NODE_ENV === "development"
           ? (patches) => {
-              // No need to read "op", in will only be "replace"
-              patchDescriptions = patches.map((_) => _.path.join("."));
-            }
+            // No need to read "op", in will only be "replace"
+            patchDescriptions = patches.map((_) => _.path.join("."));
+          }
           : undefined
       );
       if (newState !== originalState) {
-        const description = `@@${this.name}/setState${patchDescriptions ? `[${patchDescriptions.join("/")}]` : ``}`;
         setAppState(
           {
             moduleName: this.name,
             state: newState,
           },
-          description
         );
       }
     } else {
@@ -137,23 +131,26 @@ export class Module<
    *
    * https://github.com/react-boilerplate/react-boilerplate/issues/1281
    */
-  pushHistory(url: string): SagaGenerator;
-  pushHistory(url: string, stateMode: "keep-state"): SagaGenerator;
-  pushHistory<T extends object>(url: string, state: T): SagaGenerator; // Recommended explicitly pass the generic type
-  pushHistory(state: HistoryState): SagaGenerator;
+  pushHistory(url: string): void;
+  pushHistory(url: string, stateMode: "keep-state"): void;
+  pushHistory<T extends object>(url: string, state: T): void; // Recommended explicitly pass the generic type
+  pushHistory(state: HistoryState): void;
 
-  *pushHistory(urlOrState: HistoryState | string, state?: object | "keep-state"): SagaGenerator {
+  pushHistory(urlOrState: HistoryState | string, state?: object | "keep-state"): void {
+    // TODO 每行都待验证
     if (typeof urlOrState === "string") {
       const url: string = urlOrState;
-      if (state) {
-        yield put(push(url, state === "keep-state" ? app.history.location.state : state));
+      if (state === "keep-state") {
+        history.pushState(app.history.location.state, "", url);
+      } if (state) {
+        history.pushState(state, "", url)
       } else {
-        yield put(push(url));
+        history.pushState({}, "", url)
       }
     } else {
       const currentURL = location.pathname + location.search;
       const state: HistoryState = urlOrState;
-      yield put(push(currentURL, state));
+      history.pushState(state, "", currentURL)
     }
   }
 }

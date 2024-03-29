@@ -1,12 +1,11 @@
 import React from "react";
 import { app } from "../app";
-import { executeAction } from "../module";
+import { executeAction, type ErrorListener } from "../module";
 import { Module, type ModuleLifecycleListener } from "./Module";
 import type { Location } from "history";
 import type { RouteComponentProps } from "react-router";
-import { processTaskAsync } from "../util/taskUtils";
-import { setNavigationPrevented } from "../storeActions";
-import { ErrorListener } from "core-fe";
+import { delay, processTaskAsync } from "../util/taskUtils";
+import { setIdleState, setNavigationPrevented } from "../storeActions";
 
 let startupModuleName: string | null = null;
 
@@ -19,7 +18,7 @@ type Actions<M> = {
 };
 
 export class ModuleProxy<M extends Module<any, any>> {
-  constructor(private module: M, private actions: Actions<M>) {}
+  constructor(private module: M, private actions: Actions<M>) { }
 
   getActions(): Actions<M> {
     return this.actions;
@@ -33,8 +32,6 @@ export class ModuleProxy<M extends Module<any, any>> {
 
     return class extends React.PureComponent<P> {
       static displayName = `Module[${moduleName}]`;
-      private lifecycleController: AbortController | null = null;
-      private lastDidUpdateController: AbortController | null = null;
       private tickCount: number = 0;
       private mountedTime: number = Date.now();
 
@@ -46,7 +43,7 @@ export class ModuleProxy<M extends Module<any, any>> {
       }
 
       override componentDidMount() {
-        this.lifecycleController = processTaskAsync(async () => await this.lifecycle.call(this));
+        this.lifecycle.call(this)
       }
 
       override async componentDidUpdate(prevProps: Readonly<P>) {
@@ -68,29 +65,21 @@ export class ModuleProxy<M extends Module<any, any>> {
           !this.areLocationsPathNameEqual(currentLocation, prevLocation) &&
           this.hasOwnLifecycle("onPathnameMatched")
         ) {
-          try {
-            this.lastDidUpdateController?.abort();
-          } catch (e) {
-            // In rare case, it may throw error, just ignore
-          }
-
           const action = `${moduleName}/@@PATHNAME_MATCHED`;
           const startTime = Date.now();
-          this.lastDidUpdateController = processTaskAsync(async () => {
-            await executeAction({
-              actionName: action,
-              handler: lifecycleListener.onPathnameMatched.bind(lifecycleListener),
-              payload: [currentRouteParams, currentLocation],
-            });
-            app.logger.info({
-              action,
-              elapsedTime: Date.now() - startTime,
-              info: {
-                // URL params should not contain any sensitive or complicated objects
-                route_params: JSON.stringify(currentRouteParams),
-                history_state: JSON.stringify(currentLocation.state),
-              },
-            });
+          executeAction({
+            actionName: action,
+            handler: lifecycleListener.onPathnameMatched.bind(lifecycleListener),
+            payload: [currentRouteParams, currentLocation],
+          });
+          app.logger.info({
+            action,
+            elapsedTime: Date.now() - startTime,
+            info: {
+              // URL params should not contain any sensitive or complicated objects
+              route_params: JSON.stringify(currentRouteParams),
+              history_state: JSON.stringify(currentLocation.state),
+            },
           });
           setNavigationPrevented(false);
         }
@@ -108,30 +97,24 @@ export class ModuleProxy<M extends Module<any, any>> {
           !this.areLocationsEqual(currentLocation, prevLocation) &&
           this.hasOwnLifecycle("onLocationMatched")
         ) {
-          try {
-            this.lastDidUpdateController?.abort();
-          } catch (e) {
-            // In rare case, it may throw error, just ignore
-          }
           const action = `${moduleName}/@@LOCATION_MATCHED`;
           const startTime = Date.now();
 
-          this.lastDidUpdateController = processTaskAsync(async () => {
-            await executeAction({
-              actionName: action,
-              handler: lifecycleListener.onLocationMatched.bind(lifecycleListener),
-              payload: [currentRouteParams, currentLocation],
-            });
-            app.logger.info({
-              action,
-              elapsedTime: Date.now() - startTime,
-              info: {
-                // URL params should not contain any sensitive or complicated objects
-                route_params: JSON.stringify(currentRouteParams),
-                history_state: JSON.stringify(currentLocation.state),
-              },
-            });
+          executeAction({
+            actionName: action,
+            handler: lifecycleListener.onLocationMatched.bind(lifecycleListener),
+            payload: [currentRouteParams, currentLocation],
           });
+          app.logger.info({
+            action,
+            elapsedTime: Date.now() - startTime,
+            info: {
+              // URL params should not contain any sensitive or complicated objects
+              route_params: JSON.stringify(currentRouteParams),
+              history_state: JSON.stringify(currentLocation.state),
+            },
+          });
+
           setNavigationPrevented(false);
         }
       }
@@ -143,13 +126,10 @@ export class ModuleProxy<M extends Module<any, any>> {
 
         const currentLocation = (this.props as any).location;
         if (currentLocation) {
-          // Only cancel navigation prevention if current component is connected to <Route>
           setNavigationPrevented(false);
         }
-        // TODO 待替换
-        // app.sagaMiddleware.run(function* () {
-        //     yield put({type: `@@${moduleName}/@@cancel-saga`});
-        // });
+
+        // Notation: May need to cancel all methods in execution.
 
         app.logger.info({
           action: `${moduleName}/@@DESTROY`,
@@ -159,12 +139,7 @@ export class ModuleProxy<M extends Module<any, any>> {
           },
         });
 
-        try {
-          this.lastDidUpdateController?.abort();
-          this.lifecycleController?.abort();
-        } catch (e) {
-          // In rare case, it may throw error, just ignore
-        }
+        // Notation: May need to cancel all methods in execution. 
       }
 
       override render() {
@@ -269,30 +244,37 @@ export class ModuleProxy<M extends Module<any, any>> {
       }
 
       private async onTickWatcher() {
-        let runningIntervalTask: AbortController = processTaskAsync(async () => {
-          this.onTick.call(this);
+        let runningIntervalTask: AbortController = processTaskAsync(async signal => {
+          this.onTickTask.call(this, signal);
         });
         while (true) {
-          //  TODO 替换
-          // yield take(IDLE_STATE_ACTION);
-          // yield cancel(runningIntervalTask); // no-op if already cancelled
-          // const isActive: boolean = yield select((state: State) => state.idle.state === "active");
-          // if (isActive) {
-          //     runningIntervalTask = yield fork(this.onTickSaga.bind(this));
-          // }
+          setIdleState();
+          runningIntervalTask.abort();
+          const isActive = app.getState("idle").state === "active";
+          if (isActive) {
+            runningIntervalTask = processTaskAsync(async signal => {
+              this.onTickTask.bind(this, signal);
+            })
+          }
         }
       }
 
-      private async onTick() {
-        //  TODO 替换
-        // const tickIntervalInMillisecond = (lifecycleListener.onTick.tickInterval || 5) * 1000;
-        // const boundTicker = lifecycleListener.onTick.bind(lifecycleListener);
-        // const tickActionName = `${moduleName}/@@TICK`;
-        // while (true) {
-        //     yield rawCall(executeAction, tickActionName, boundTicker);
-        //     this.tickCount++;
-        //     yield delay(tickIntervalInMillisecond);
-        // }
+      private async onTickTask(signal: AbortSignal) {
+        const tickIntervalInMillisecond = (lifecycleListener.onTick.tickInterval || 5) * 1000;
+        const boundTicker = lifecycleListener.onTick.bind(lifecycleListener);
+        const tickActionName = `${moduleName}/@@TICK`;
+        while (true) {
+          if (signal.aborted) {
+            return;
+          }
+          await executeAction({
+            actionName: tickActionName,
+            handler: boundTicker,
+            payload: []
+          })
+          this.tickCount++;
+          await delay(tickIntervalInMillisecond)
+        }
       }
     };
   }

@@ -1,4 +1,4 @@
-import { type History, type Location } from "history";
+import { type History, type Location, type Action } from "history";
 import { create, type StateCreator, type StoreMutatorIdentifier } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { devtools } from "zustand/middleware";
@@ -9,17 +9,12 @@ export type ImmerStateCreator<
   Mps extends [StoreMutatorIdentifier, unknown][] = [],
   Mcs extends [StoreMutatorIdentifier, unknown][] = []
 > = StateCreator<T, [...Mps, ["zustand/immer", never]], Mcs>;
-export interface Slice {}
-
-interface LoadingActionPayload {
-  identifier: string;
-  show: boolean;
-}
+export interface Slice { }
 
 export interface RouterSlice extends Slice {
   router: {
     location: Location;
-    action: "POP" | "PUSH"; // TODO 目前不知道从哪里取
+    action: Action
   };
 }
 
@@ -48,12 +43,21 @@ export interface SetStateSlice extends Slice {
 
 export type State = RouterSlice & LoadingSlice & IdleSlice & SetStateSlice & NavigationSlice;
 
-export const createRouterSlice: (history: History) => ImmerStateCreator<RouterSlice> = (history: History) => (set) => ({
-  router: {
-    location: history.location,
-    action: "POP", // TODO 目前不知道从哪里取
-  },
-});
+export const createRouterSlice: (history: History) => ImmerStateCreator<RouterSlice> = (history: History) => (set) => {
+  history.listen((location, action) => {
+    set(draft => {
+      draft.router.action = action;
+      draft.router.location = location
+    })
+  })
+
+  return {
+    router: {
+      location: history.location,
+      action: history.action,
+    },
+  }
+}
 
 export const createNavigationSlice: ImmerStateCreator<NavigationSlice> = (set) => ({
   navigationPrevented: false,

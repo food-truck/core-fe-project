@@ -4,9 +4,8 @@ import { Router } from "react-router-dom";
 import axios from "axios";
 import { NavigationGuard } from "./NavigationGuard";
 import { app } from "../app";
-import { executeAction, type ErrorListener } from "../module";
+import { type ErrorListener } from "../module";
 import { APIException } from "../Exception";
-import { call, delay, type SagaGenerator } from "../typed-saga";
 import { ErrorBoundary } from "../util/ErrorBoundary";
 import { ajax } from "../util/network";
 import { isBrowserSupported, isIOS } from "../util/navigator-util";
@@ -31,7 +30,7 @@ export const useStore = (selector: (state: any) => unknown) => {
  * If the `versionCheckURL` API response changes, `onRemind` will be executed.
  */
 interface VersionCheckConfig {
-  onRemind: () => SagaGenerator;
+  onRemind: () => void;
   versionCheckURL: string; // Must be GET Method, returning whatever JSON
   frequencyInSecond?: number; // Default: 600 (10 min)
 }
@@ -160,7 +159,9 @@ function renderRoot(
         <Router history={app.history}>
           <NavigationGuard
             message={navigationPreventionMessage}
-            isPrevented={app.store.getState().navigationPrevented}
+            isPrevented={app.getState(
+              "navigationPrevented"
+            )}
           />
           <ErrorBoundary>
             <EntryComponent />
@@ -213,7 +214,7 @@ function runBackgroundLoop(loggerConfig?: LoggerConfig, versionCheckConfig?: Ver
   app.loggerConfig = loggerConfig || null;
 
   if (loggerConfig) {
-    // TODO 待替换成Zustend逻辑
+    // TODO logger
     // app.sagaMiddleware.run(function* () {
     //     while (true) {
     //         yield delay((loggerConfig.frequencyInSecond || 20) * 1000);
@@ -223,7 +224,7 @@ function runBackgroundLoop(loggerConfig?: LoggerConfig, versionCheckConfig?: Ver
   }
 
   if (versionCheckConfig) {
-    // TODO 待替换成Zustend逻辑
+    // TODO logger
     // app.sagaMiddleware.run(function* () {
     //     let lastChecksum: string | null = null;
     //     while (true) {

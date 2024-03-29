@@ -24,7 +24,6 @@ export function register<M extends Module<any, any>>(module: M): ModuleProxy<M> 
         moduleName,
         state: module.initialState,
       },
-      `@@${moduleName}/@@init`
     );
   }
 
@@ -36,17 +35,11 @@ export function register<M extends Module<any, any>>(module: M): ModuleProxy<M> 
     method.actionName = qualifiedActionType;
     // actions[actionType] = (...payload: any[]): Action<any[]> => ({ type: qualifiedActionType, payload });   TODO 验证这里是否要记录qualifiedActionType? 目前看来并不需要
     actions[actionType] = method.bind(module);
-    // Action handlers的挂载处，但是在新版中，action handlers本身并未使用到，暂留备注
-    // app.actionHandlers[qualifiedActionType] = {
-    //   handler: method.bind(module),
-    //   moduleName,
-    // };
   });
 
   return new ModuleProxy(module, actions);
 }
 
-// TODO 不够周到，后续集成项目后测试再调整
 export const executeAction = async ({
   actionName,
   handler,

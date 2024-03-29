@@ -1,4 +1,5 @@
 import { app } from "./app";
+import type { IdleSlice } from "./sliceStores";
 
 export const setNavigationPrevented = (isPrevented: boolean) =>
   app.store.setState((draft) => {
@@ -10,12 +11,18 @@ export const setIdleTimeout = (timeout: number) =>
     draft.idle.timeout = timeout;
   });
 
+export const setIdleState = (state: IdleSlice["idle"]["state"] = "active") => {
+  app.store.setState((draft) => {
+    draft.idle.state = state;
+  })
+}
+
 interface SetStatePayload<T = any> {
   moduleName: string;
   state: T;
 }
 
-export const setAppState = <T = any>(payload: SetStatePayload<T>, action?: string) => {
+export const setAppState = <T = any>(payload: SetStatePayload<T>) => {
   app.store.setState((draft) => {
     draft.app[payload.moduleName] = payload.state;
   });

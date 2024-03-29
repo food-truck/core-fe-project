@@ -117,7 +117,7 @@ export class LoggerImpl implements Logger {
         } else if (exception instanceof JavaScriptException) {
             isWarning = false;
             errorCode = "JAVASCRIPT_ERROR";
-            info["app_state"] = JSON.stringify(app.store.getState().app);
+            info["app_state"] = JSON.stringify(app.getState("app"));
         } else {
             console.warn("[framework] Exception class should not be extended, throw Error instead");
             isWarning = false;
