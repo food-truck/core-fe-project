@@ -12,7 +12,7 @@ export {ajax, uri, setAjaxRequestInterceptor, setAjaxResponseInterceptor} from "
 export {ErrorBoundary} from "./util/ErrorBoundary";
 export {IdleDetector, IdleDetectorContext} from "./util/IdleDetector";
 export {Route} from "./util/Route";
-
+export {type State} from "./sliceStores";
 export {useAction, useObjectKeyAction, useUnaryAction, useBinaryAction, usePromise} from "./hooks/action";
 export {useLoadingStatus} from "./hooks/loading";
 

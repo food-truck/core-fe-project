@@ -77,13 +77,18 @@ export const createIdleSlice: ImmerStateCreator<IdleSlice> = set => ({
 export const createRootStore = (history: History) => {
     return create<State>()(
         immer(
-            devtools((...a) => ({
-                ...createRouterSlice(history)(...a),
-                ...createLoadingSlice(...a),
-                ...createIdleSlice(...a),
-                ...createSetStateSlice(...a),
-                ...createNavigationSlice(...a),
-            }))
+            devtools(
+                (...a) => ({
+                    ...createRouterSlice(history)(...a),
+                    ...createLoadingSlice(...a),
+                    ...createIdleSlice(...a),
+                    ...createSetStateSlice(...a),
+                    ...createNavigationSlice(...a),
+                }),
+                {
+                    enabled: process.env.NODE_ENV === "development",
+                }
+            )
         )
     );
 };

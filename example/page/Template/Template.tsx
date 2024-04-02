@@ -1,14 +1,9 @@
-import {useLoadingStatus} from "../../../src";
 import React from "react";
-import {useSelector} from "react-redux";
-import {RootState} from "../../type/state";
-import {LOADING} from "./type";
+import { useModuleState } from "../../useModuleState";
 
 export default function Example() {
-    const loading = useLoadingStatus(LOADING);
-    const {list} = useSelector((state: RootState) => state.app.Template);
+    const { list } = useModuleState("Template")
 
-    if (loading) return <div>loading...</div>;
     return (
         <div>
             {list.map(item => (

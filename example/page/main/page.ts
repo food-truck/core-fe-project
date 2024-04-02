@@ -1,4 +1,4 @@
-import {Module, register, SagaGenerator, Interval} from "../../../src";
+import {Module, register} from "../../../src";
 import type {RootState} from "../../type/state";
 import {State} from "./type";
 
@@ -7,12 +7,9 @@ const initialState: State = {
 };
 
 class MainModule extends Module<RootState, "main"> {
-    *setData<K extends keyof State>(state: Partial<Pick<State, K>>): SagaGenerator {
+    setData<K extends keyof State>(state: Partial<Pick<State, K>>) {
         this.setState(state as Pick<State, K>);
     }
-
-    // @Interval(10)
-    // override *onTick(): SagaGenerator {}
 }
 
 export const page = register(new MainModule("main", initialState));

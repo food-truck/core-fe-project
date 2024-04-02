@@ -1,5 +1,5 @@
 import React from "react";
-import {async, SagaGenerator} from "../../../src";
+import {async} from "../../../src";
 
 const route = {
     name: "Template",

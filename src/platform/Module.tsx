@@ -26,33 +26,33 @@ export class Module<RootState extends State, ModuleName extends keyof RootState[
         readonly initialState: RootState["app"][ModuleName]
     ) {}
 
-    async onEnter(entryComponentProps: any) {
+    onEnter(entryComponentProps: any) {
         /**
          * Called when the attached component is initially mounted.
          */
     }
 
-    async onDestroy() {
+    onDestroy() {
         /**
          * Called when the attached component is going to unmount
          */
     }
 
-    async onLocationMatched(routeParam: RouteParam, location: ModuleLocation<HistoryState>) {
+    onLocationMatched(routeParam: RouteParam, location: ModuleLocation<HistoryState>) {
         /**
          * Called when the attached component is a React-Route component and its Route location matches
          * It is called each time the location changes, as long as it still matches
          */
     }
 
-    async onPathnameMatched(routeParam: RouteParam, location: ModuleLocation<HistoryState>) {
+    onPathnameMatched(routeParam: RouteParam, location: ModuleLocation<HistoryState>) {
         /**
          * Called when the attached component is a React-Route component and its Route location pathname matches
          * It is called each time the location pathname changes, as long as it still matches
          */
     }
 
-    async onTick() {
+    onTick() {
         /**
          * Called periodically during the lifecycle of attached component
          * Usually used together with @Interval decorator, to specify the period (in second)

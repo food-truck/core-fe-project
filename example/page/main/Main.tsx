@@ -1,7 +1,7 @@
 import "./index.css";
 import React from "react";
 import {connect} from "react-redux";
-import {Route, showLoading} from "../../../src";
+import {Route} from "../../../src";
 import {RouteProps, Redirect} from "react-router";
 import {Switch} from "react-router-dom";
 import {RootState} from "../../type/state";

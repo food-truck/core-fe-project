@@ -1,7 +1,6 @@
-import {call, Module, register, Loading, SagaGenerator, Interval, createActionHandlerDecorator} from "../../../src";
-import {initialState} from "./state";
-import {LOADING} from "./type";
-import {RootState} from "../../type/state";
+import { Module, register } from "../../../src";
+import { initialState } from "./state";
+import { RootState } from "../../type/state";
 
 class MockData {
     static todoList(): Promise<string[]> {
@@ -14,14 +13,13 @@ class MockData {
 }
 
 class TemplateModule extends Module<RootState, "Template"> {
-    override *onEnter(entryComponentProps: any): SagaGenerator {
-        yield* this.getTodoList();
+    override onEnter(entryComponentProps: any) {
+        this.getTodoList();
     }
 
-    @Loading(LOADING)
-    *getTodoList(): SagaGenerator {
-        const list = yield* call(MockData.todoList);
-        this.setState({list});
+    async getTodoList() {
+        const list = await MockData.todoList();
+        this.setState({ list });
     }
 }
 
