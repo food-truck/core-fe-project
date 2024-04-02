@@ -21,7 +21,7 @@ const Provider = ({children, store}: {children: React.ReactNode; store: typeof a
     return <ZustandContext.Provider value={store}>{children}</ZustandContext.Provider>;
 };
 
-export const useStore = (selector: (state: State) => any) => {
+export const useSelector = (selector: (state: State) => any) => {
     const store = useContext(ZustandContext);
     return store(selector);
 };

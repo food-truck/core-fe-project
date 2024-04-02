@@ -3,7 +3,7 @@ import "regenerator-runtime/runtime";
 import "./debug";
 
 export * as immer from "immer";
-export {bootstrap, useStore} from "./platform/bootstrap";
+export {bootstrap, useSelector} from "./platform/bootstrap";
 export {Module} from "./platform/Module";
 export type {ModuleLocation, ModuleLifecycleListener} from "./platform/Module.tsx";
 export {async, type AsyncOptions, type AsyncErrorComponentProps} from "./util/async";
