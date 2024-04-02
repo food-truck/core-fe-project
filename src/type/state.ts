@@ -1,4 +1,4 @@
-import type { State } from "../sliceStores";
+import type {State} from "../sliceStores";
 
 export interface RootState extends State {
     app: {

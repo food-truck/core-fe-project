@@ -1,9 +1,9 @@
 export const processTaskAsync = (handler: (signal: AbortSignal) => Promise<any>): AbortController => {
-  const controller = new AbortController();
+    const controller = new AbortController();
 
-  handler(controller.signal)
+    handler(controller.signal);
 
-  return controller;
+    return controller;
 };
 
-export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
