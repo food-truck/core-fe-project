@@ -20,8 +20,6 @@ The whole website is split into **modules**, usually by routes.
 
 For each module, it contains **1 state** and **some actions**, to handle business logic.
 
-No matter sync or async, every action is automatically wrapped as saga generator.
-
 To extend module features, modules can also implement its own lifecycle actions, like onEnter/onDestroy/onActive etc.
 
 ## Advanced Features
@@ -34,7 +32,7 @@ To extend module features, modules can also implement its own lifecycle actions,
 
 ## Core API
 
-- startApp
+- bootstrap
 
 Bootstrap function, configuring entry component / error handler / log / initialization action.
 

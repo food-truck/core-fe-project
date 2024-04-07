@@ -87,7 +87,6 @@ function detectOldBrowser(onOldBrowserDetected?: () => void) {
             }
             alert(alertMessage);
         }
-        // After that, the following code may still run
     }
 }
 

@@ -5,6 +5,7 @@ import type {TickIntervalDecoratorFlag} from "../module";
 import type {Logger} from "../Logger";
 import {setAppState, setNavigationPrevented} from "../storeActions";
 import {type State} from "../sliceStores";
+import {nanoid} from "nanoid";
 
 if (process.env.NODE_ENV === "development") enablePatches();
 
@@ -25,6 +26,24 @@ export class Module<RootState extends State, ModuleName extends keyof RootState[
         readonly name: ModuleName,
         readonly initialState: RootState["app"][ModuleName]
     ) {}
+
+    async executeAsync<T extends any>(asyncFn: (signal: AbortSignal) => Promise<T>, key?: string) {
+        const mapKey = key || nanoid();
+        const controller = new AbortController();
+        if (!app.actionControllers[this.name]) {
+            app.actionControllers[this.name] = {};
+        }
+        app.actionControllers[this.name][mapKey] = controller;
+
+        try {
+            const response = await asyncFn(controller.signal);
+            return response;
+        } catch (error) {
+            throw error;
+        } finally {
+            delete app.actionControllers[this.name][mapKey];
+        }
+    }
 
     onEnter(entryComponentProps: any) {
         /**

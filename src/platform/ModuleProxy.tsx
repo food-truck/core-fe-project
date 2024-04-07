@@ -29,6 +29,7 @@ export class ModuleProxy<M extends Module<any, any>> {
 
     attachLifecycle<P extends object>(ComponentType: React.ComponentType<P>): React.ComponentType<P> {
         const moduleName = this.module.name as string;
+        const module = this.module;
         const lifecycleListener = this.module as ModuleLifecycleListener;
         const modulePrototype = Object.getPrototypeOf(lifecycleListener);
         const actions = this.actions as any;
@@ -65,6 +66,7 @@ export class ModuleProxy<M extends Module<any, any>> {
                 if (currentLocation && currentRouteParams && !this.areLocationsPathNameEqual(currentLocation, prevLocation) && this.hasOwnLifecycle("onPathnameMatched")) {
                     const action = `${moduleName}/@@PATHNAME_MATCHED`;
                     const startTime = Date.now();
+
                     executeAction({
                         actionName: action,
                         handler: lifecycleListener.onPathnameMatched.bind(lifecycleListener),
@@ -122,7 +124,11 @@ export class ModuleProxy<M extends Module<any, any>> {
                     setNavigationPrevented(false);
                 }
 
-                // Notation: May need to cancel all methods in execution.
+                Object.entries(app.actionControllers).forEach(([actionModuleName, actionControllersMap]) => {
+                    if (actionModuleName === moduleName) {
+                        Object.values(actionControllersMap).forEach(control => control.abort());
+                    }
+                });
 
                 app.logger.info({
                     action: `${moduleName}/@@DESTROY`,
@@ -131,8 +137,6 @@ export class ModuleProxy<M extends Module<any, any>> {
                         staying_second: (Date.now() - this.mountedTime) / 1000,
                     },
                 });
-
-                // Notation: May need to cancel all methods in execution.
             }
 
             override render() {
