@@ -1,10 +1,10 @@
 import React, {createContext, useContext} from "react";
 import {createRoot} from "react-dom/client";
-import {Router} from "react-router-dom";
+import {BrowserRouter} from "react-router-dom";
 import axios from "axios";
 import {NavigationGuard} from "./NavigationGuard";
 import {app} from "../app";
-import {type ErrorListener} from "../module";
+import {type ErrorListener, executeAction} from "../module";
 import {APIException} from "../Exception";
 import {ErrorBoundary} from "../util/ErrorBoundary";
 import {ajax} from "../util/network";
@@ -15,6 +15,7 @@ import type {Location} from "history";
 import type {LoggerConfig} from "../Logger";
 import {setIdleTimeout} from "../storeActions";
 import type {State} from "../sliceStores";
+import {delay} from "../util/taskUtils";
 
 const ZustandContext = createContext<typeof app.store>(app.store);
 const Provider = ({children, store}: {children: React.ReactNode; store: typeof app.store}) => {
@@ -146,12 +147,12 @@ function renderRoot(EntryComponent: React.ComponentType, rootContainer: HTMLElem
     root.render(
         <Provider store={app.store}>
             <IdleDetector>
-                <Router history={app.history}>
+                <BrowserRouter>
                     <NavigationGuard message={navigationPreventionMessage} isPrevented={app.getState("navigationPrevented")} />
                     <ErrorBoundary>
                         <EntryComponent />
                     </ErrorBoundary>
-                </Router>
+                </BrowserRouter>
             </IdleDetector>
         </Provider>
     );
@@ -206,6 +207,7 @@ function runBackgroundLoop(loggerConfig?: LoggerConfig, versionCheckConfig?: Ver
         //         yield* call(sendEventLogs);
         //     }
         // });
+        runSendEventLogs();
     }
 
     if (versionCheckConfig) {
@@ -223,6 +225,36 @@ function runBackgroundLoop(loggerConfig?: LoggerConfig, versionCheckConfig?: Ver
         //         yield delay((versionCheckConfig.frequencyInSecond || 600) * 1000);
         //     }
         // });
+        runVersionCheck(versionCheckConfig);
+    }
+
+    function runSendEventLogs() {
+        async function loop() {
+            await sendEventLogs();
+            await delay((loggerConfig?.frequencyInSecond || 20) * 1000);
+            requestAnimationFrame(loop);
+        }
+        loop();
+    }
+
+    function runVersionCheck(versionCheckConfig: VersionCheckConfig) {
+        let lastChecksum: string | null = null;
+        async function checkLoop() {
+            const newChecksum = await fetchVersionChecksum(versionCheckConfig.versionCheckURL);
+            if (newChecksum) {
+                if (lastChecksum !== null && newChecksum !== lastChecksum) {
+                    await executeAction({
+                        actionName: VERSION_CHECK_ACTION,
+                        handler: versionCheckConfig.onRemind,
+                        payload: [],
+                    });
+                    lastChecksum = newChecksum;
+                }
+            }
+            await delay((versionCheckConfig.frequencyInSecond || 600) * 1000);
+            requestAnimationFrame(checkLoop);
+        }
+        checkLoop();
     }
 }
 

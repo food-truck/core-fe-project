@@ -1,6 +1,6 @@
 import React from "react";
 import {app} from "../app";
-import {loadingAction} from "../reducer";
+import {setLoadingState} from "../storeActions";
 import {captureError, errorToException} from "./error-util";
 
 type ReactComponentKeyOf<T> = {[P in keyof T]: T[P] extends React.ComponentType<any> ? P : never}[keyof T];
@@ -62,13 +62,19 @@ export function async<T, K extends ReactComponentKeyOf<T>>(resolve: () => Promis
 
             try {
                 this.setState({error: null});
-                app.store.dispatch(loadingAction(true, loadingIdentifier));
+                setLoadingState({
+                    show: true,
+                    identifier: loadingIdentifier || "global",
+                });
                 await loadChunk();
             } catch (e) {
                 captureError(e, ASYNC_LOAD_ACTION);
                 this.setState({error: e});
             } finally {
-                app.store.dispatch(loadingAction(false, loadingIdentifier));
+                setLoadingState({
+                    show: false,
+                    identifier: loadingIdentifier || "global",
+                });
                 app.logger.info({
                     action: ASYNC_LOAD_ACTION,
                     elapsedTime: Date.now() - startTime,

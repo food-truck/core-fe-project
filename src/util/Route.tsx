@@ -1,10 +1,10 @@
-import React from "react";
-import {Redirect, Route as ReactRouterDOMRoute, type RouteComponentProps, type RouteProps} from "react-router-dom";
+import React, {useEffect} from "react";
+import {Navigate, Route as ReactRouterDOMRoute} from "react-router-dom";
+import type {PathRouteProps, LayoutRouteProps, IndexRouteProps} from "react-router";
 import {ErrorBoundary} from "./ErrorBoundary";
 import {app} from "../app";
 
-interface Props extends RouteProps {
-    component: React.ComponentType<RouteComponentProps<any>> | React.ComponentType<any>;
+interface Props {
     // All below are optional
     withErrorBoundary: boolean;
     accessCondition: boolean;
@@ -12,47 +12,40 @@ interface Props extends RouteProps {
     notFound: boolean;
 }
 
-export class Route extends React.PureComponent<Props> {
-    static defaultProps: Pick<Props, "exact" | "sensitive" | "withErrorBoundary" | "accessCondition" | "unauthorizedRedirectTo" | "notFound"> = {
-        exact: true,
-        sensitive: true,
-        withErrorBoundary: true,
-        accessCondition: true,
-        unauthorizedRedirectTo: "/",
-        notFound: false,
-    };
-
-    renderRegularRouteComponent = (props: RouteComponentProps<any>): React.ReactElement => {
-        const {component, accessCondition, unauthorizedRedirectTo, notFound, withErrorBoundary} = this.props;
-        if (accessCondition) {
-            const WrappedComponent = notFound ? withNotFoundWarning(component) : component;
-            const routeNode = <WrappedComponent {...props} />;
-            return withErrorBoundary ? <ErrorBoundary>{routeNode}</ErrorBoundary> : routeNode;
-        } else {
-            return <Redirect to={unauthorizedRedirectTo} />;
-        }
-    };
-
-    override render() {
-        const {component, ...restRouteProps} = this.props;
-        return <ReactRouterDOMRoute {...restRouteProps} render={this.renderRegularRouteComponent} />;
+const CommonElement: React.FC<Props & {element: React.ReactNode}> = props => {
+    const {element, accessCondition, unauthorizedRedirectTo, notFound, withErrorBoundary} = props;
+    if (accessCondition) {
+        const node = notFound ? withNotFoundWarning(element) : element;
+        return withErrorBoundary ? <ErrorBoundary>{node}</ErrorBoundary> : node;
+    } else {
+        return <Navigate to={unauthorizedRedirectTo} replace />;
     }
+};
+
+export function Route(props: Partial<Props> & PathRouteProps): React.ReactElement;
+export function Route(props: Partial<Props> & LayoutRouteProps): React.ReactElement;
+export function Route(props: Partial<Props> & IndexRouteProps): React.ReactElement;
+export function Route(props: Partial<Props> & (PathRouteProps | LayoutRouteProps | IndexRouteProps)): React.ReactElement {
+    const {element, accessCondition = true, unauthorizedRedirectTo = "/", notFound = false, withErrorBoundary = true, caseSensitive = true, ...reset} = props;
+    const commonProps = {
+        element,
+        accessCondition,
+        unauthorizedRedirectTo,
+        notFound,
+        withErrorBoundary,
+    };
+    return <ReactRouterDOMRoute {...reset} caseSensitive={caseSensitive} element={<CommonElement {...commonProps} />} />;
 }
 
-function withNotFoundWarning<T extends {}>(WrappedComponent: React.ComponentType<T>): React.ComponentType<T> {
-    return class extends React.PureComponent<T> {
-        override componentDidMount() {
-            app.logger.warn({
-                action: "@@framework/route-404",
-                elapsedTime: 0,
-                errorMessage: `${location.href} not supported by <Route>`,
-                errorCode: "ROUTE_NOT_FOUND",
-                info: {},
-            });
-        }
-
-        override render() {
-            return <WrappedComponent {...this.props} />;
-        }
-    };
+function withNotFoundWarning(children: React.ReactNode): React.ReactElement {
+    useEffect(() => {
+        app.logger.warn({
+            action: "@@framework/route-404",
+            elapsedTime: 0,
+            errorMessage: `${location.href} not supported by <Route>`,
+            errorCode: "ROUTE_NOT_FOUND",
+            info: {},
+        });
+    }, []);
+    return <>{children}</>;
 }

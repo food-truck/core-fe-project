@@ -13,7 +13,6 @@ export {ErrorBoundary} from "./util/ErrorBoundary";
 export {IdleDetector, IdleDetectorContext} from "./util/IdleDetector";
 export {Route} from "./util/Route";
 export {type State} from "./sliceStores";
-export {useAction, useObjectKeyAction, useUnaryAction, useBinaryAction, usePromise} from "./hooks/action";
 export {useLoadingStatus} from "./hooks/loading";
 
 export {Interval} from "./decorator/Interval";
@@ -28,6 +27,6 @@ export * from "./storeActions";
 export {register, type ErrorListener} from "./module";
 export {logger} from "./app";
 
-export {Switch, Redirect, NavLink, useLocation, useHistory, useParams, useRouteMatch, matchPath} from "react-router-dom";
+export {Routes, Navigate, NavLink, useLocation, useNavigate, useMatch, useParams, matchPath} from "react-router-dom";
 export type {Location} from "history";
 export {produce} from "immer";
