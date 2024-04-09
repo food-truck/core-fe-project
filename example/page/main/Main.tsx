@@ -1,6 +1,5 @@
 import "./index.css";
 import React from "react";
-import {connect} from "react-redux";
 import {Route} from "../../../src";
 import {RouteProps, Redirect} from "react-router";
 import {Switch} from "react-router-dom";
@@ -71,4 +70,4 @@ const mapStatesToProps = (state: RootState): Props => {
     };
 };
 
-export default connect(mapStatesToProps)(Main);
+export default Main;

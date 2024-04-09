@@ -16,6 +16,8 @@ export interface ErrorListener {
     onError: ErrorHandler;
 }
 
+export type ActionHandler = () => Promise<void>;
+
 export function register<M extends Module<any, any>>(module: M): ModuleProxy<M> {
     const moduleName: string = module.name;
     if (!app.store.getState().app[moduleName]) {

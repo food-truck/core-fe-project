@@ -17,12 +17,18 @@ import {setIdleTimeout} from "../storeActions";
 import type {State} from "../sliceStores";
 import {delay} from "../util/taskUtils";
 
-const ZustandContext = createContext<typeof app.store>(app.store);
+let ZustandContext: React.Context<typeof app.store> | null = null;
+const createZustandContext = () => {
+    ZustandContext = createContext<typeof app.store>(app.store);
+};
+
 const Provider = ({children, store}: {children: React.ReactNode; store: typeof app.store}) => {
+    if (!ZustandContext) return children;
     return <ZustandContext.Provider value={store}>{children}</ZustandContext.Provider>;
 };
 
 export const useSelector = (selector: (state: State) => any) => {
+    if (!ZustandContext) return null;
     const store = useContext(ZustandContext);
     return store(selector);
 };
@@ -71,6 +77,7 @@ export function bootstrap(option: BootstrapOption): void {
     setupLocationChangeListener(option.browserConfig?.onLocationChange);
     setIdleTimeout(option.idleTimeoutInSecond ?? DEFAULT_IDLE_TIMEOUT);
     runBackgroundLoop(option.loggerConfig, option.versionConfig);
+    createZustandContext();
     renderRoot(option.componentType, option.rootContainer || injectRootContainer(), option.browserConfig?.navigationPreventionMessage || "Are you sure to leave current page?");
 }
 
