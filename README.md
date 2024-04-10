@@ -13,7 +13,6 @@ This project uses [pnpm](https://pnpm.io/) to manage the dependencies.
 - To run the build script, run `pnpm build`
 - To publish to npm, run `pnpm publish`, which runs `pnpm build` automatically before publish
 
-
 ## Basic Features
 
 The whole website is split into **modules**, usually by routes.
@@ -40,20 +39,59 @@ Bootstrap function, configuring entry component / error handler / log / initiali
 
 Register a module (including lifecycle actions and custom actions).
 
-## Usage:
+## Migrating to v2
+In v2, we made some changes, removing redux, redux-saga, generate syntax, etc. and replacing them with new libraries such as zustand.
 
-(To be done)
+In the Module, since we ditched redux-saga, we can use normal async, await syntax to handle business scenarios.
+- before
+```
+class MainModule extends Module<RootState, "main"> {
+    *fetchList(): SagaGenerator {
+        const response = yield* call(ListService.list);
+        this.setState({
+            list: response.list
+        })
+    }
+    *onEnter() {
+        yield* this.fetchList();
+    }
+}
+```
+- after 
+```
+class MainModule extends Module<RootState, "main"> {
+    async fetchList() {
+        const response = await ListService.list();
+        this.setState({
+            list: response.list
+        })
+    }
+    onEnter() {
+        this.fetchList();
+    }
+}
+```
+When using an action, you can call the function on the action directly without using a hook or dispatch.
+- before
+```
+import {actions} from "..";
+import {useAction} from "@wonder/core-fe"
 
-## Similar Frameworks
+function Example() {
+    const fetchList = useAction(actions.fetchList);
 
-We also develop a same (90% similarity) framework for app, using the same tech stack (in React Native).
+    return (
+        <button onClick={fetchList}>Fetch List</button>
+    );
+}
+```
+- after
+```
+import {actions} from "..";
 
-https://github.com/food-truck/core-native-project
-
-Our idea is also inspired by many React-based frameworks
-
-https://github.com/dvajs/dva
-
-https://github.com/rematch/rematch
-
-https://github.com/wangtao0101/resa
+function Example() {
+    return (
+        <button onClick={actions.fetchList}>Fetch List</button>
+    );
+}
+```
