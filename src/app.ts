@@ -2,7 +2,6 @@ import {createBrowserHistory, type History} from "history";
 import {type Logger, type LoggerConfig, LoggerImpl} from "./Logger";
 import {createRootStore, type State} from "./sliceStores";
 import type {ErrorHandler} from "./module";
-import type {CancelTokenSource} from "axios";
 
 interface App {
     readonly history: History;

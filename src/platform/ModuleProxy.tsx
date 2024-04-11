@@ -4,7 +4,7 @@ import {executeAction, type ErrorListener} from "../module";
 import {Module, type ModuleLifecycleListener} from "./Module";
 import type {Location} from "history";
 import type {RouteComponentProps} from "react-router";
-import {delay, processTaskAsync} from "../util/taskUtils";
+import {delay} from "../util/taskUtils";
 import {setIdleState, setNavigationPrevented} from "../storeActions";
 
 let startupModuleName: string | null = null;
@@ -30,6 +30,7 @@ export class ModuleProxy<M extends Module<any, any>> {
     attachLifecycle<P extends object>(ComponentType: React.ComponentType<P>): React.ComponentType<P> {
         const moduleName = this.module.name as string;
         const module = this.module;
+        const executeAsync = module.executeAsync.bind(module);
         const lifecycleListener = this.module as ModuleLifecycleListener;
         const modulePrototype = Object.getPrototypeOf(lifecycleListener);
         const actions = this.actions as any;
@@ -231,15 +232,17 @@ export class ModuleProxy<M extends Module<any, any>> {
             }
 
             private async onTickWatcher() {
-                let runningIntervalTask: AbortController = processTaskAsync(async signal => {
+                const ABORT_SIGNAL_KEY = "@@TICK_ABORT_SIGNAL";
+
+                executeAsync(async signal => {
                     this.onTickTask.call(this, signal);
-                });
+                }, ABORT_SIGNAL_KEY);
                 while (true) {
                     setIdleState();
-                    runningIntervalTask.abort();
+                    app.actionControllers[moduleName][ABORT_SIGNAL_KEY]?.abort();
                     const isActive = app.getState("idle").state === "active";
                     if (isActive) {
-                        runningIntervalTask = processTaskAsync(async signal => {
+                        executeAsync(async signal => {
                             this.onTickTask.bind(this, signal);
                         });
                     }
