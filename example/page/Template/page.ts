@@ -1,12 +1,28 @@
-import {Loading, Module, register} from "../../../src";
-import {initialState} from "./state";
-import {RootState} from "../../type/state";
+import { Loading, Module, register } from "../../../src";
+import { initialState } from "./state";
+import { RootState } from "../../type/state";
+import { app } from "../../../src/app";
 
 class MockData {
-    static todoList(): Promise<string[]> {
+    static todoList(signal?: AbortSignal): Promise<string[]> {
+        let isPromiseEnd = false
         return new Promise(resolve => {
+            const abortHanlder = () => {
+                if (!isPromiseEnd) {
+                    resolve(["cancelled"]);
+                    isPromiseEnd = true;
+                }
+            }
+
+            if (signal) {
+                signal?.addEventListener("abort", abortHanlder)
+            }
             setTimeout(() => {
-                resolve(["apple", "🍊", "🌰"]);
+                if (!isPromiseEnd) {
+                    resolve(["apple", "🍊", "🌰"]);
+                    isPromiseEnd = true
+                }
+                signal?.removeEventListener("abort", abortHanlder)
             }, 1500);
         });
     }
@@ -17,10 +33,14 @@ class TemplateModule extends Module<RootState, "Template"> {
         const res = await this.getTodoList();
     }
 
+    cancelGetTodoList() {
+        app.actionControllers["Template"]["getTodoList"]?.abort()
+    }
+
     @Loading("abc")
     async getTodoList() {
-        const list = await MockData.todoList();
-        this.setState({list});
+        const list = await this.executeAsync(signal => MockData.todoList(signal), "getTodoList")
+        this.setState({ list });
         return list;
     }
 }
