@@ -1,7 +1,6 @@
 import { Loading, Module, register } from "../../../src";
 import { initialState } from "./state";
 import { RootState } from "../../type/state";
-import { app } from "../../../src/app";
 
 class MockData {
     static todoList(signal?: AbortSignal): Promise<string[]> {
@@ -34,7 +33,7 @@ class TemplateModule extends Module<RootState, "Template"> {
     }
 
     cancelGetTodoList() {
-       this.cancelSignalMap["getTodoList"]?.abort()
+       this.abortSignalMap["getTodoList"]?.abort()
     }
 
     @Loading("abc")

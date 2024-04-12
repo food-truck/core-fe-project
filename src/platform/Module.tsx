@@ -78,7 +78,7 @@ export class Module<RootState extends State, ModuleName extends keyof RootState[
          */
     }
 
-    get cancelSignalMap() {
+    get abortSignalMap() {
         return app.actionControllers[this.name];
     }
 
