@@ -34,12 +34,12 @@ class TemplateModule extends Module<RootState, "Template"> {
     }
 
     cancelGetTodoList() {
-        app.actionControllers["Template"]["getTodoList"]?.abort()
+       this.cancelSignalMap["getTodoList"]?.abort()
     }
 
     @Loading("abc")
     async getTodoList() {
-        const list = await this.executeAsync(signal => MockData.todoList(signal), "getTodoList")
+        const list = await this.executeAsync(MockData.todoList, "getTodoList")
         this.setState({ list });
         return list;
     }
