@@ -33,7 +33,7 @@ class TemplateModule extends Module<RootState, "Template"> {
     }
 
     cancelGetTodoList() {
-        this.abortSignalMap["getTodoList"]?.abort()
+        this.abortControllerMap["getTodoList"]?.abort()
     }
 
     setList(list: string[]) {
