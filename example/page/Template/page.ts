@@ -1,6 +1,6 @@
-import { Module, register } from "../../../src";
-import { initialState } from "./state";
-import { RootState } from "../../type/state";
+import {Loading, Module, register} from "../../../src";
+import {initialState} from "./state";
+import {RootState} from "../../type/state";
 
 class MockData {
     static todoList(): Promise<string[]> {
@@ -13,13 +13,15 @@ class MockData {
 }
 
 class TemplateModule extends Module<RootState, "Template"> {
-    override onEnter(entryComponentProps: any) {
-        this.getTodoList();
+    override async onEnter(entryComponentProps: any) {
+        const res = await this.getTodoList();
     }
 
+    @Loading("abc")
     async getTodoList() {
         const list = await MockData.todoList();
-        this.setState({ list });
+        this.setState({list});
+        return list;
     }
 }
 

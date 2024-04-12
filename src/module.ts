@@ -16,7 +16,7 @@ export interface ErrorListener {
     onError: ErrorHandler;
 }
 
-export type ActionHandler = () => Promise<void>;
+export type ActionHandler<ReturnType> = (...args: any[]) => Promise<ReturnType>;
 
 export function register<M extends Module<any, any>>(module: M): ModuleProxy<M> {
     const moduleName: string = module.name;

@@ -1,17 +1,15 @@
 import {NetworkConnectionException} from "../Exception";
-import {createActionHandlerDecorator} from "./createActionHandlerDecorator";
+import {type ActionHandlerWithMetaData, createActionHandlerDecorator} from "./createActionHandlerDecorator";
 import {app} from "../app";
 
 /**
  * Do nothing (only create a warning log) if NetworkConnectionException is thrown.
  * Mainly used for background tasks.
  */
-export function SilentOnNetworkConnectionError() {
-    return createActionHandlerDecorator(async function (handler) {
-        // const {resolve} = createPromiseMiddleware();
+export function SilentOnNetworkConnectionError<ReturnType>() {
+    return createActionHandlerDecorator(async function (handler: ActionHandlerWithMetaData<ReturnType>) {
         try {
-            const ret = await handler();
-            // resolve(app.actionMap, handler.actionName, ret);
+            return await handler();
         } catch (e) {
             if (e instanceof NetworkConnectionException) {
                 app.logger.exception(
@@ -22,6 +20,7 @@ export function SilentOnNetworkConnectionError() {
                     },
                     handler.actionName
                 );
+                throw e;
             } else {
                 throw e;
             }

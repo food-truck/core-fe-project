@@ -207,31 +207,10 @@ function runBackgroundLoop(loggerConfig?: LoggerConfig, versionCheckConfig?: Ver
     app.loggerConfig = loggerConfig || null;
 
     if (loggerConfig) {
-        // TODO logger
-        // app.sagaMiddleware.run(function* () {
-        //     while (true) {
-        //         yield delay((loggerConfig.frequencyInSecond || 20) * 1000);
-        //         yield* call(sendEventLogs);
-        //     }
-        // });
         runSendEventLogs();
     }
 
     if (versionCheckConfig) {
-        // TODO logger
-        // app.sagaMiddleware.run(function* () {
-        //     let lastChecksum: string | null = null;
-        //     while (true) {
-        //         const newChecksum = yield* call(fetchVersionChecksum, versionCheckConfig.versionCheckURL);
-        //         if (newChecksum) {
-        //             if (lastChecksum !== null && newChecksum !== lastChecksum) {
-        //                 yield* executeAction(VERSION_CHECK_ACTION, versionCheckConfig.onRemind);
-        //             }
-        //             lastChecksum = newChecksum;
-        //         }
-        //         yield delay((versionCheckConfig.frequencyInSecond || 600) * 1000);
-        //     }
-        // });
         runVersionCheck(versionCheckConfig);
     }
 
