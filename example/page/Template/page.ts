@@ -2,13 +2,13 @@ import { Loading, Module, register } from "../../../src";
 import { initialState } from "./state";
 import { RootState } from "../../type/state";
 
-class MockData {
+export class MockData {
     static todoList(signal?: AbortSignal): Promise<string[]> {
         let isPromiseEnd = false
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             const abortHanlder = () => {
                 if (!isPromiseEnd) {
-                    resolve(["cancelled"]);
+                    reject("cancelled");
                     isPromiseEnd = true;
                 }
             }
@@ -29,18 +29,21 @@ class MockData {
 
 class TemplateModule extends Module<RootState, "Template"> {
     override async onEnter(entryComponentProps: any) {
-        const res = await this.getTodoList();
+        await this.getTodoList();
     }
 
     cancelGetTodoList() {
-       this.abortSignalMap["getTodoList"]?.abort()
+        this.abortSignalMap["getTodoList"]?.abort()
+    }
+
+    setList(list: string[]) {
+        this.setState({ list })
     }
 
     @Loading("abc")
     async getTodoList() {
         const list = await this.executeAsync(MockData.todoList, "getTodoList")
-        this.setState({ list });
-        return list;
+        this.setList(list)
     }
 }
 

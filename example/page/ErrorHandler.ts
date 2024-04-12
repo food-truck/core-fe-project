@@ -1,7 +1,7 @@
-import {ErrorListener, Exception, APIException, SagaGenerator} from "../../src";
+import {ErrorListener, Exception, APIException} from "../../src";
 
 export class ErrorHandler implements ErrorListener {
-    *onError(exception: Exception): SagaGenerator {
-        console.error("server error");
+    onError(exception: Exception) {
+        console.error(exception);
     }
 }
