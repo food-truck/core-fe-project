@@ -16,8 +16,6 @@ type Actions<M> = {
     [K in Exclude<FunctionKeys<M>, keyof Module<any, any> | keyof ErrorListener>]: M[K];
 };
 
-let timmer: number | NodeJS.Timeout;
-
 export class ModuleProxy<M extends Module<any, any>> {
     constructor(
         private module: M,
@@ -38,6 +36,7 @@ export class ModuleProxy<M extends Module<any, any>> {
 
         return class extends React.PureComponent<P> {
             static displayName = `Module[${moduleName}]`;
+            private timer: number | NodeJS.Timeout = -1;
             private tickCount: number = 0;
             private mountedTime: number = Date.now();
 
@@ -133,7 +132,7 @@ export class ModuleProxy<M extends Module<any, any>> {
                 });
 
                 //clearTimer
-                clearInterval(timmer);
+                clearInterval(this.timer);
 
                 app.logger.info({
                     action: `${moduleName}/@@DESTROY`,
@@ -166,7 +165,7 @@ export class ModuleProxy<M extends Module<any, any>> {
                 const enterActionName = `${moduleName}/@@ENTER`;
                 const startTime = Date.now();
 
-                await executeAction({
+                executeAction({
                     actionName: enterActionName,
                     handler: lifecycleListener.onEnter.bind(lifecycleListener),
                     payload: [props],
@@ -185,7 +184,7 @@ export class ModuleProxy<M extends Module<any, any>> {
                         const initialRenderActionName = `${moduleName}/@@PATHNAME_MATCHED`;
                         const startTime = Date.now();
                         const routeParams = props.match.params;
-                        await executeAction({
+                        executeAction({
                             actionName: initialRenderActionName,
                             handler: lifecycleListener.onPathnameMatched.bind(lifecycleListener),
                             payload: [routeParams, props.location],
@@ -208,7 +207,7 @@ export class ModuleProxy<M extends Module<any, any>> {
                         const initialRenderActionName = `${moduleName}/@@LOCATION_MATCHED`;
                         const startTime = Date.now();
                         const routeParams = props.match.params;
-                        await executeAction({
+                        executeAction({
                             actionName: initialRenderActionName,
                             handler: lifecycleListener.onLocationMatched.bind(lifecycleListener),
                             payload: [routeParams, props.location],
@@ -231,12 +230,12 @@ export class ModuleProxy<M extends Module<any, any>> {
                 }
 
                 if (this.hasOwnLifecycle("onTick")) {
-                    await this.onTickWatcher.call(this);
+                    this.onTickWatcher.call(this);
                 }
             }
 
             private async onTickWatcher() {
-                this.onTickTask();
+                this.onTickTask.call(this);
                 // This technique is not recommended for adding state in React Server Components (typically in Next.js 13 and above).
                 // It can lead to unexpected bugs and privacy issues for your users.
                 // For more details, see https://github.com/pmndrs/zustand/discussions/2200
@@ -244,7 +243,7 @@ export class ModuleProxy<M extends Module<any, any>> {
                     state => state.idle.state,
                     (preIdleState, idleState) => {
                         if (preIdleState !== idleState) {
-                            clearInterval(timmer);
+                            clearInterval(this.timer);
                             const isActive = idleState === "active";
                             if (isActive) {
                                 this.onTickTask();
@@ -267,8 +266,8 @@ export class ModuleProxy<M extends Module<any, any>> {
                     this.tickCount++;
                 };
                 tickExecute();
-                clearInterval(timmer);
-                timmer = setInterval(tickExecute, tickIntervalInMillisecond);
+                clearInterval(this.timer);
+                this.timer = setInterval(tickExecute, tickIntervalInMillisecond);
             }
         };
     }
