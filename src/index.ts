@@ -12,7 +12,7 @@ export {ajax, uri, setAjaxRequestInterceptor, setAjaxResponseInterceptor} from "
 export {ErrorBoundary} from "./util/ErrorBoundary";
 export {IdleDetector, IdleDetectorContext} from "./util/IdleDetector";
 export {Route} from "./util/Route";
-export {delay} from "./util/taskUtils"
+export {delay} from "./util/taskUtils";
 export {type State} from "./sliceStores";
 export {useLoadingStatus} from "./hooks/loading";
 
@@ -22,6 +22,7 @@ export {Log} from "./decorator/Log";
 export {Mutex} from "./decorator/Mutex";
 export {RetryOnNetworkConnectionError} from "./decorator/RetryOnNetworkConnectionError";
 export {SilentOnNetworkConnectionError} from "./decorator/SilentOnNetworkConnectionError";
+export {Subscribe} from "./decorator/Subscribe";
 
 export {Exception, APIException, NetworkConnectionException} from "./Exception";
 export * from "./storeActions";

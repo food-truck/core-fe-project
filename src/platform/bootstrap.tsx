@@ -204,7 +204,6 @@ function setupLocationChangeListener(listener?: (location: Location) => void) {
 
 function runBackgroundLoop(loggerConfig?: LoggerConfig, versionCheckConfig?: VersionCheckConfig) {
     app.logger.info({action: "@@ENTER"});
-    console.info(app.logger)
     app.loggerConfig = loggerConfig || null;
 
     if (loggerConfig) {

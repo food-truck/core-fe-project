@@ -1,7 +1,7 @@
 import {type History, type Location, type Action} from "history";
 import {create, type StateCreator, type StoreMutatorIdentifier} from "zustand";
 import {immer} from "zustand/middleware/immer";
-import {devtools} from "zustand/middleware";
+import {devtools, subscribeWithSelector} from "zustand/middleware";
 import {DEFAULT_IDLE_TIMEOUT} from "./util/IdleDetector";
 
 export type ImmerStateCreator<T, Mps extends [StoreMutatorIdentifier, unknown][] = [], Mcs extends [StoreMutatorIdentifier, unknown][] = []> = StateCreator<T, [...Mps, ["zustand/immer", never]], Mcs>;
@@ -76,18 +76,20 @@ export const createIdleSlice: ImmerStateCreator<IdleSlice> = set => ({
 
 export const createRootStore = (history: History) => {
     return create<State>()(
-        immer(
-            devtools(
-                (...a) => ({
-                    ...createRouterSlice(history)(...a),
-                    ...createLoadingSlice(...a),
-                    ...createIdleSlice(...a),
-                    ...createSetStateSlice(...a),
-                    ...createNavigationSlice(...a),
-                }),
-                {
-                    enabled: process.env.NODE_ENV === "development",
-                }
+        subscribeWithSelector(
+            immer(
+                devtools(
+                    (...a) => ({
+                        ...createRouterSlice(history)(...a),
+                        ...createLoadingSlice(...a),
+                        ...createIdleSlice(...a),
+                        ...createSetStateSlice(...a),
+                        ...createNavigationSlice(...a),
+                    }),
+                    {
+                        enabled: process.env.NODE_ENV === "development",
+                    }
+                )
             )
         )
     );
