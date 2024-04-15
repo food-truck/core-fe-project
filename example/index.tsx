@@ -5,4 +5,5 @@ import {Main} from "./page/main";
 bootstrap({
     componentType: Main,
     errorListener: new ErrorHandler(),
+    idleTimeoutInSecond: 10,
 });

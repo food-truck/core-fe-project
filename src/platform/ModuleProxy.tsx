@@ -4,8 +4,7 @@ import {executeAction, type ErrorListener} from "../module";
 import {Module, type ModuleLifecycleListener} from "./Module";
 import type {Location} from "history";
 import type {RouteComponentProps} from "react-router";
-import {delay} from "../util/taskUtils";
-import {setIdleState, setNavigationPrevented} from "../storeActions";
+import {setNavigationPrevented} from "../storeActions";
 
 let startupModuleName: string | null = null;
 
@@ -16,6 +15,8 @@ type FunctionKeys<T> = {
 type Actions<M> = {
     [K in Exclude<FunctionKeys<M>, keyof Module<any, any> | keyof ErrorListener>]: M[K];
 };
+
+let timmer: number | NodeJS.Timeout;
 
 export class ModuleProxy<M extends Module<any, any>> {
     constructor(
@@ -131,6 +132,9 @@ export class ModuleProxy<M extends Module<any, any>> {
                     }
                 });
 
+                //clearTimer
+                clearInterval(timmer);
+
                 app.logger.info({
                     action: `${moduleName}/@@DESTROY`,
                     stats: {
@@ -232,39 +236,39 @@ export class ModuleProxy<M extends Module<any, any>> {
             }
 
             private async onTickWatcher() {
-                const ABORT_SIGNAL_KEY = "@@TICK_ABORT_SIGNAL";
-
-                executeAsync(async signal => {
-                    this.onTickTask.call(this, signal);
-                }, ABORT_SIGNAL_KEY);
-                while (true) {
-                    setIdleState();
-                    app.actionControllers[moduleName][ABORT_SIGNAL_KEY]?.abort();
-                    const isActive = app.getState("idle").state === "active";
-                    if (isActive) {
-                        executeAsync(async signal => {
-                            this.onTickTask.bind(this, signal);
-                        });
+                this.onTickTask();
+                // This technique is not recommended for adding state in React Server Components (typically in Next.js 13 and above).
+                // It can lead to unexpected bugs and privacy issues for your users.
+                // For more details, see https://github.com/pmndrs/zustand/discussions/2200
+                app.store.subscribe(
+                    state => state.idle.state,
+                    (preIdleState, idleState) => {
+                        if (preIdleState !== idleState) {
+                            clearInterval(timmer);
+                            const isActive = idleState === "active";
+                            if (isActive) {
+                                this.onTickTask();
+                            }
+                        }
                     }
-                }
+                );
             }
 
-            private async onTickTask(signal: AbortSignal) {
+            private async onTickTask() {
                 const tickIntervalInMillisecond = (lifecycleListener.onTick.tickInterval || 5) * 1000;
                 const boundTicker = lifecycleListener.onTick.bind(lifecycleListener);
                 const tickActionName = `${moduleName}/@@TICK`;
-                while (true) {
-                    if (signal.aborted) {
-                        return;
-                    }
+                const tickExecute = async () => {
                     await executeAction({
                         actionName: tickActionName,
                         handler: boundTicker,
                         payload: [],
                     });
                     this.tickCount++;
-                    await delay(tickIntervalInMillisecond);
-                }
+                };
+                tickExecute();
+                clearInterval(timmer);
+                timmer = setInterval(tickExecute, tickIntervalInMillisecond);
             }
         };
     }
