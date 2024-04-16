@@ -36,8 +36,7 @@ export class Module<RootState extends State, ModuleName extends keyof RootState[
         app.actionControllers[this.name][mapKey] = controller;
 
         try {
-            const response = await asyncFn(controller.signal);
-            return response;
+            return await asyncFn(controller.signal);
         } catch (error) {
             throw error;
         } finally {

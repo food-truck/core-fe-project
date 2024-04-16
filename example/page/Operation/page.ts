@@ -1,4 +1,4 @@
-import { Loading, Module, register, delay } from "../../../src";
+import { Loading, Module, register, delay, Subscribe } from "../../../src";
 import { initialState } from "./state";
 import { RootState } from "../../type/state";
 import { actions as templateActions } from "../Template"
@@ -16,6 +16,13 @@ class OperationModule extends Module<RootState, "Operation"> {
         this.setState({
             name: newValue
         })
+    }
+    override onDestroy(): void {
+        this.listenList();
+    }
+    @Subscribe(state => state.app.Template?.list)
+    private listenList(value?: RootState["app"]["Template"]["list"], prevValue?: RootState["app"]["Template"]["list"]) {
+        console.info(`new List ${value} & old List ${prevValue}`)
     }
 }
 
