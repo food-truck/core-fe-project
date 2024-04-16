@@ -241,7 +241,7 @@ export class ModuleProxy<M extends Module<any, any>> {
                 // For more details, see https://github.com/pmndrs/zustand/discussions/2200
                 app.store.subscribe(
                     state => state.idle.state,
-                    (preIdleState, idleState) => {
+                    (idleState, preIdleState) => {
                         if (preIdleState !== idleState) {
                             clearInterval(this.timer);
                             const isActive = idleState === "active";

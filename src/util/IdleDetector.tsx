@@ -46,7 +46,6 @@ export function IdleDetector(props: Props) {
         if (timeout > 0) {
             const idleTimer = createTimer(timeout, newIdleState => {
                 if (newIdleState !== stateRef.current) {
-                    // dispatch(idleStateActions(newIdleState));
                     setIdleState(newIdleState);
                 }
             });
