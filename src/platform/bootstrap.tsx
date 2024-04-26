@@ -1,4 +1,4 @@
-import React, {createContext, useContext} from "react";
+import React from "react";
 import {createRoot} from "react-dom/client";
 import {BrowserRouter} from "react-router-dom";
 import axios from "axios";
@@ -14,24 +14,8 @@ import {DEFAULT_IDLE_TIMEOUT, IdleDetector} from "../util/IdleDetector";
 import type {Location} from "history";
 import type {LoggerConfig} from "../Logger";
 import {setIdleTimeout} from "../storeActions";
-import type {State} from "../sliceStores";
 import {delay} from "../util/taskUtils";
-
-let ZustandContext: React.Context<typeof app.store> | null = null;
-const createZustandContext = () => {
-    ZustandContext = createContext<typeof app.store>(app.store);
-};
-
-const Provider = ({children, store}: {children: React.ReactNode; store: typeof app.store}) => {
-    if (!ZustandContext) return children;
-    return <ZustandContext.Provider value={store}>{children}</ZustandContext.Provider>;
-};
-
-export const useSelector = (selector: (state: State) => any) => {
-    if (!ZustandContext) return null;
-    const store = useContext(ZustandContext);
-    return store(selector);
-};
+import {Provider, createZustandContext} from "../ZustandProvider";
 
 /**
  * Configuration for frontend version check.

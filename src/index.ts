@@ -3,7 +3,7 @@ import "regenerator-runtime/runtime";
 import "./debug";
 
 export * as immer from "immer";
-export {bootstrap, useSelector} from "./platform/bootstrap";
+export {bootstrap} from "./platform/bootstrap";
 export {Module} from "./platform/Module";
 export type {ModuleLocation, ModuleLifecycleListener} from "./platform/Module.tsx";
 export {async, type AsyncOptions, type AsyncErrorComponentProps} from "./util/async";
@@ -15,6 +15,7 @@ export {Route} from "./util/Route";
 export {delay} from "./util/taskUtils";
 export {type State} from "./sliceStores";
 export {useLoadingStatus} from "./hooks/loading";
+export {useSelector} from "./hooks/action";
 
 export {Interval} from "./decorator/Interval";
 export {Loading} from "./decorator/Loading";

@@ -1,7 +1,7 @@
 import React from "react";
 import {setIdleState} from "../storeActions";
 import type {IdleSlice, State} from "../sliceStores";
-import {useSelector} from "../platform/bootstrap";
+import {useSelector} from "../hooks/action";
 
 type IdleState = IdleSlice["idle"];
 
