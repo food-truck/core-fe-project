@@ -1,9 +1,7 @@
 import React from "react";
 import {setIdleState} from "../storeActions";
-import type {IdleSlice, State} from "../sliceStores";
+import type {IdleState, State} from "../sliceStores";
 import {useSelector} from "../hooks/action";
-
-type IdleState = IdleSlice["idle"];
 
 export const DEFAULT_IDLE_TIMEOUT = 300;
 

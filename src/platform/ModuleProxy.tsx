@@ -239,8 +239,8 @@ export class ModuleProxy<M extends Module<any, any>> {
                 // This technique is not recommended for adding state in React Server Components (typically in Next.js 13 and above).
                 // It can lead to unexpected bugs and privacy issues for your users.
                 // For more details, see https://github.com/pmndrs/zustand/discussions/2200
-                app.store.subscribe(
-                    state => state.idle.state,
+                app.store.idle.subscribe(
+                    state => state.state,
                     (idleState, preIdleState) => {
                         if (preIdleState !== idleState) {
                             clearInterval(this.timer);
