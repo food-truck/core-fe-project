@@ -20,7 +20,7 @@ class OperationModule extends Module<RootState, "Operation"> {
     override onDestroy(): void {
         this.listenList();
     }
-    @Subscribe(state => state.app.Template?.list)
+    @Subscribe((state: RootState["app"]) => state.Template.list)
     private listenList(value?: RootState["app"]["Template"]["list"], prevValue?: RootState["app"]["Template"]["list"]) {
         console.info(`new List ${value} & old List ${prevValue}`)
     }

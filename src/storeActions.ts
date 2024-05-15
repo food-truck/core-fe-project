@@ -1,8 +1,8 @@
 import {app} from "./app";
-import type {IdleSlice} from "./sliceStores";
+import type {IdleState} from "./sliceStores";
 
 export const setNavigationPrevented = (isPrevented: boolean) =>
-    app.store.setState(
+    app.store.navigationStore.setState(
         draft => {
             draft.navigationPrevented = isPrevented;
         },
@@ -11,18 +11,18 @@ export const setNavigationPrevented = (isPrevented: boolean) =>
     );
 
 export const setIdleTimeout = (timeout: number) =>
-    app.store.setState(
+    app.store.idle.setState(
         draft => {
-            draft.idle.timeout = timeout;
+            draft.timeout = timeout;
         },
         false,
         "@@framework/idle-timeout"
     );
 
-export const setIdleState = (state: IdleSlice["idle"]["state"] = "active") => {
-    app.store.setState(
+export const setIdleState = (state: IdleState["state"] = "active") => {
+    app.store.idle.setState(
         draft => {
-            draft.idle.state = state;
+            draft.state = state;
         },
         false,
         "@@framework/idle-state"
@@ -35,7 +35,7 @@ interface SetStatePayload<T = any> {
 }
 
 export const setAppState = <T = any>(payload: SetStatePayload<T>, actionName?: string) => {
-    app.store.setState(
+    app.store.app.setState(
         draft => {
             draft.app[payload.moduleName] = payload.state;
         },
@@ -50,7 +50,7 @@ interface LoadingActionPayload {
 }
 
 export const setLoadingState = (payload: LoadingActionPayload) => {
-    app.store.setState(
+    app.store.loading.setState(
         draft => {
             const count = draft.loading[payload.identifier] || 0;
             draft.loading[payload.identifier] = count + (payload.show ? 1 : -1);

@@ -1,98 +1,78 @@
-import {type History, type Location, type Action} from "history";
-import {create, type StateCreator, type StoreMutatorIdentifier} from "zustand";
-import {immer} from "zustand/middleware/immer";
-import {devtools, subscribeWithSelector} from "zustand/middleware";
-import {DEFAULT_IDLE_TIMEOUT} from "./util/IdleDetector";
+import { type History, type Location, type Action, createBrowserHistory } from "history";
+import { create, type StateCreator, type StoreMutatorIdentifier, type UseBoundStore } from "zustand";
+import { immer } from "zustand/middleware/immer";
+import { devtools, subscribeWithSelector } from "zustand/middleware";
+import { DEFAULT_IDLE_TIMEOUT } from "./util/IdleDetector";
+
+export const broswerHistory = createBrowserHistory();
+
 
 export type ImmerStateCreator<T, Mps extends [StoreMutatorIdentifier, unknown][] = [], Mcs extends [StoreMutatorIdentifier, unknown][] = []> = StateCreator<T, [...Mps, ["zustand/immer", never]], Mcs>;
-export interface Slice {}
 
-export interface RouterSlice extends Slice {
-    router: {
-        location: Location;
-        action: Action;
-    };
+export interface LoadingState {
+    [key: string]: any;
 }
 
-export interface LoadingSlice extends Slice {
-    loading: {
-        [key: string]: any;
-    };
-}
-
-export interface NavigationSlice extends Slice {
+export interface NavigationState {
     navigationPrevented: boolean;
 }
 
-export interface IdleSlice extends Slice {
-    idle: {
-        timeout: number;
-        state: "active" | "idle";
-    };
+export interface IdleState {
+    timeout: number;
+    state: "active" | "idle";
 }
 
-export interface SetStateSlice extends Slice {
-    app: {
-        [module: string]: any;
-    };
+export interface AppState {
+    [module: string]: any;
 }
 
-export type State = RouterSlice & LoadingSlice & IdleSlice & SetStateSlice & NavigationSlice;
+export interface RouterState {
+    location: Location;
+    action: Action;
+}
 
-export const createRouterSlice: (history: History) => ImmerStateCreator<RouterSlice> = (history: History) => set => {
-    history.listen((location, action) => {
-        set(draft => {
-            draft.router.action = action;
-            draft.router.location = location;
-        });
-    });
+export interface State {
+    app: AppState;
+    router: RouterState;
+    idle: IdleState;
+    navigationStore: NavigationState;
+    loading: LoadingState;
+}
 
-    return {
-        router: {
-            location: history.location,
-            action: history.action,
-        },
-    };
-};
+export type StoreType = ReturnType<typeof createStore>
 
-export const createNavigationSlice: ImmerStateCreator<NavigationSlice> = set => ({
-    navigationPrevented: false,
-});
-
-export const createLoadingSlice: ImmerStateCreator<LoadingSlice> = set => ({
-    loading: {},
-});
-
-export const createSetStateSlice: ImmerStateCreator<SetStateSlice> = set => ({
-    app: {},
-});
-
-export const createIdleSlice: ImmerStateCreator<IdleSlice> = set => ({
-    idle: {
-        timeout: DEFAULT_IDLE_TIMEOUT,
-        state: "active",
-    },
-});
-
-export const createRootStore = (history: History) => {
-    return create<State>()(
-        subscribeWithSelector(
-            immer(
-                devtools(
-                    (...a) => ({
-                        ...createRouterSlice(history)(...a),
-                        ...createLoadingSlice(...a),
-                        ...createIdleSlice(...a),
-                        ...createSetStateSlice(...a),
-                        ...createNavigationSlice(...a),
-                    }),
-                    {
-                        enabled: process.env.NODE_ENV === "development",
-                    }
-                )
+export const createStore = <T extends object>(creater: ImmerStateCreator<T>) => create<T>()(
+    subscribeWithSelector(
+        immer(
+            devtools(
+                creater
             )
         )
-    );
-};
+    )
+)
 
-export const showLoading = (state: State, identifier: string = "global") => state.loading[identifier] > 0;
+const routerStore = createStore<RouterState>(() => ({
+    location: broswerHistory.location,
+    action: broswerHistory.action,
+}))
+
+const navigationStore = createStore<NavigationState>(() => ({
+    navigationPrevented: false,
+}))
+
+const loadingStore = createStore<LoadingState>(() => ({}))
+
+const appStore = createStore<AppState>(() => ({}))
+
+const idleStore = createStore<IdleState>(() => ({
+    timeout: DEFAULT_IDLE_TIMEOUT,
+    state: "active",
+}))
+
+export const store = {
+    router: routerStore,
+    navigationStore: navigationStore,
+    loading: loadingStore,
+    app: appStore,
+    idle: idleStore,
+}
