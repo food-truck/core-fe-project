@@ -1,5 +1,5 @@
 import React from "react";
-import {Prompt} from "react-router";
+// import {Prompt} from "react-router";
 import type {State} from "../sliceStores";
 
 interface OwnProps {
@@ -19,7 +19,8 @@ class Component extends React.PureComponent<Props, State> {
 
     override render() {
         const {isPrevented, message} = this.props;
-        return <Prompt message={message} when={isPrevented} />;
+        // return <Prompt message={message} when={isPrevented} />;
+        return null;
     }
 }
 

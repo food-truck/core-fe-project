@@ -6,7 +6,7 @@ export interface FTIRoute {
     menu?: string;
     icon?: React.ReactNode;
     role: string | null;
-    component?: ComponentType<any>;
+    Component?: ComponentType<any>;
     children?: FTIRoute[];
     hidden?: boolean;
     customBreadCrumbs?: React.ReactElement;

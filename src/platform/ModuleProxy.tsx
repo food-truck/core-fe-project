@@ -3,10 +3,13 @@ import {app} from "../app";
 import {executeAction, type ErrorListener} from "../module";
 import {Module, type ModuleLifecycleListener} from "./Module";
 import type {Location} from "history";
-import type {RouteComponentProps} from "react-router";
+import {useMatch} from "react-router-dom";
 import {setNavigationPrevented} from "../storeActions";
+import type {RouterState} from "../sliceStores";
 
 let startupModuleName: string | null = null;
+
+type RouteComponentProps = RouterState & {match: ReturnType<typeof useMatch>};
 
 type FunctionKeys<T> = {
     [K in keyof T]: T[K] extends Function ? K : never;
@@ -183,7 +186,7 @@ export class ModuleProxy<M extends Module<any, any>> {
                     if ("match" in props && "location" in props) {
                         const initialRenderActionName = `${moduleName}/@@PATHNAME_MATCHED`;
                         const startTime = Date.now();
-                        const routeParams = props.match.params;
+                        const routeParams = props.match?.params;
                         executeAction({
                             actionName: initialRenderActionName,
                             handler: lifecycleListener.onPathnameMatched.bind(lifecycleListener),
@@ -193,7 +196,7 @@ export class ModuleProxy<M extends Module<any, any>> {
                             action: initialRenderActionName,
                             elapsedTime: Date.now() - startTime,
                             info: {
-                                route_params: JSON.stringify(props.match.params),
+                                route_params: JSON.stringify(props.match?.params),
                                 history_state: JSON.stringify(props.location.state),
                             },
                         });
@@ -206,7 +209,7 @@ export class ModuleProxy<M extends Module<any, any>> {
                     if ("match" in props && "location" in props) {
                         const initialRenderActionName = `${moduleName}/@@LOCATION_MATCHED`;
                         const startTime = Date.now();
-                        const routeParams = props.match.params;
+                        const routeParams = props.match?.params;
                         executeAction({
                             actionName: initialRenderActionName,
                             handler: lifecycleListener.onLocationMatched.bind(lifecycleListener),
@@ -216,7 +219,7 @@ export class ModuleProxy<M extends Module<any, any>> {
                             action: initialRenderActionName,
                             elapsedTime: Date.now() - startTime,
                             info: {
-                                route_params: JSON.stringify(props.match.params),
+                                route_params: JSON.stringify(props.match?.params),
                                 history_state: JSON.stringify(props.location.state),
                             },
                         });
