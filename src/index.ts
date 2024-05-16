@@ -1,7 +1,10 @@
-import "core-js/stable";
-import "regenerator-runtime/runtime";
 import "./debug";
 
+export {
+    delay,
+    setAppState,
+    setLoadingState,
+} from "@wonder/core-core"
 export * as immer from "immer";
 export {bootstrap} from "./platform/bootstrap";
 export {Module} from "./platform/Module";
@@ -12,11 +15,9 @@ export {ajax, uri, setAjaxRequestInterceptor, setAjaxResponseInterceptor} from "
 export {ErrorBoundary} from "./util/ErrorBoundary";
 export {IdleDetector, IdleDetectorContext} from "./util/IdleDetector";
 export {Route} from "./util/Route";
-export {delay} from "./util/taskUtils";
 export {type State} from "./sliceStores";
 export {useLoadingStatus} from "./hooks/loading";
 export {useSelector} from "./hooks/action";
-
 export {Interval} from "./decorator/Interval";
 export {Loading} from "./decorator/Loading";
 export {Log} from "./decorator/Log";

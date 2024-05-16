@@ -1,12 +1,16 @@
 import {type Location, type Action, createBrowserHistory} from "history";
 import {create, type StateCreator, type StoreMutatorIdentifier, type UseBoundStore} from "zustand";
 import {immer} from "zustand/middleware/immer";
-import {devtools, subscribeWithSelector} from "zustand/middleware";
-import {DEFAULT_IDLE_TIMEOUT} from "./util/IdleDetector";
+import { immer as immerMiddleWare } from "zustand/middleware/immer";
+import { devtools, subscribeWithSelector } from "zustand/middleware";
+import { DEFAULT_IDLE_TIMEOUT } from "./util/IdleDetector";
+
 
 export const broswerHistory = createBrowserHistory();
 
 export type ImmerStateCreator<T, Mps extends [StoreMutatorIdentifier, unknown][] = [], Mcs extends [StoreMutatorIdentifier, unknown][] = []> = StateCreator<T, [...Mps, ["zustand/immer", never]], Mcs>;
+
+export const createStore = <T extends object>(creater: ImmerStateCreator<T>) => create<T>()(subscribeWithSelector(immerMiddleWare(devtools(creater))));
 
 export interface LoadingState {
     [key: string]: any;
@@ -40,7 +44,6 @@ export interface State {
 
 export type StoreType = ReturnType<typeof createStore>;
 
-export const createStore = <T extends object>(creater: ImmerStateCreator<T>) => create<T>()(subscribeWithSelector(immer(devtools(creater))));
 
 const routerStore = createStore<RouterState>(() => ({
     location: broswerHistory.location,
@@ -51,10 +54,6 @@ const navigationStore = createStore<NavigationState>(() => ({
     navigationPrevented: false,
 }));
 
-const loadingStore = createStore<LoadingState>(() => ({}));
-
-const appStore = createStore<AppState>(() => ({}));
-
 const idleStore = createStore<IdleState>(() => ({
     timeout: DEFAULT_IDLE_TIMEOUT,
     state: "active",
@@ -62,8 +61,6 @@ const idleStore = createStore<IdleState>(() => ({
 
 export const store = {
     router: routerStore,
-    navigationStore,
-    loading: loadingStore,
-    app: appStore,
+    navigationStore: navigationStore,
     idle: idleStore,
 };

@@ -5,6 +5,7 @@ import {Module, type ModuleLifecycleListener} from "./Module";
 import type {Location} from "history";
 import type {RouteComponentProps} from "react-router";
 import {setNavigationPrevented} from "../storeActions";
+import { CoreModuleProxy } from "@wonder/core-core";
 
 let startupModuleName: string | null = null;
 
@@ -16,20 +17,10 @@ type Actions<M> = {
     [K in Exclude<FunctionKeys<M>, keyof Module<any, any> | keyof ErrorListener>]: M[K];
 };
 
-export class ModuleProxy<M extends Module<any, any>> {
-    constructor(
-        private module: M,
-        private actions: Actions<M>
-    ) {}
-
-    getActions(): Actions<M> {
-        return this.actions;
-    }
-
+export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> {
     attachLifecycle<P extends object>(ComponentType: React.ComponentType<P>): React.ComponentType<P> {
         const moduleName = this.module.name as string;
         const module = this.module;
-        const executeAsync = module.executeAsync.bind(module);
         const lifecycleListener = this.module as ModuleLifecycleListener;
         const modulePrototype = Object.getPrototypeOf(lifecycleListener);
         const actions = this.actions as any;
