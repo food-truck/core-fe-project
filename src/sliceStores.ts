@@ -1,4 +1,4 @@
-import {type History, type Location, type Action, createBrowserHistory} from "history";
+import {type Location, type Action, createBrowserHistory} from "history";
 import {create, type StateCreator, type StoreMutatorIdentifier, type UseBoundStore} from "zustand";
 import {immer} from "zustand/middleware/immer";
 import {devtools, subscribeWithSelector} from "zustand/middleware";
@@ -62,7 +62,7 @@ const idleStore = createStore<IdleState>(() => ({
 
 export const store = {
     router: routerStore,
-    navigationStore: navigationStore,
+    navigationStore,
     loading: loadingStore,
     app: appStore,
     idle: idleStore,

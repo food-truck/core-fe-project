@@ -27,7 +27,7 @@ export class Module<RootState extends State, ModuleName extends keyof RootState[
         readonly initialState: RootState["app"][ModuleName]
     ) {}
 
-    async executeAsync<T extends any>(asyncFn: (signal: AbortSignal) => Promise<T>, key?: string) {
+    async executeAsync<T>(asyncFn: (signal: AbortSignal) => Promise<T>, key?: string) {
         const mapKey = key || generateUniqueId();
         const controller = new AbortController();
         if (!app.actionControllers[this.name]) {
@@ -37,8 +37,6 @@ export class Module<RootState extends State, ModuleName extends keyof RootState[
 
         try {
             return await asyncFn(controller.signal);
-        } catch (error) {
-            throw error;
         } finally {
             delete app.actionControllers[this.name][mapKey];
         }
