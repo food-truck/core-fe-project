@@ -1,8 +1,7 @@
 import {app} from "../app";
 import type {Module} from "../platform/Module";
 import {shallow} from "zustand/shallow";
-import type {RootState} from "../type/state";
-import type {State, StoreType, store} from "../sliceStores";
+import type {StoreType, store} from "../sliceStores";
 
 /**
  * Subscribe decorator for subscribing to changes in the application state. When the decorated method is called, the subscription is unsubscribed.
