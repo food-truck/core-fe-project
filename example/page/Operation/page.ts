@@ -2,7 +2,7 @@ import { Loading, Module, register, delay, Subscribe } from "../../../src";
 import { initialState } from "./state";
 import { RootState } from "../../type/state";
 import { actions as templateActions } from "../Template"
-
+ 
 class OperationModule extends Module<RootState, "Operation"> {
     @Loading("add")
     async addItem() {
@@ -20,7 +20,7 @@ class OperationModule extends Module<RootState, "Operation"> {
     override onDestroy(): void {
         this.listenList();
     }
-    @Subscribe((state: RootState["app"]) => state.Template.list)
+    @Subscribe((state: RootState["app"]) => state?.Template?.list)
     private listenList(value?: RootState["app"]["Template"]["list"], prevValue?: RootState["app"]["Template"]["list"]) {
         console.info(`new List ${value} & old List ${prevValue}`)
     }

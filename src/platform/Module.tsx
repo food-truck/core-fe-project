@@ -1,11 +1,11 @@
-import { produce, enablePatches } from "immer";
-import { app } from "../app";
-import type { Location } from "history";
-import type { TickIntervalDecoratorFlag } from "../module";
-import type { Logger } from "../Logger";
-import { setAppState, setNavigationPrevented } from "../storeActions";
-import { type State, type StoreType } from "../sliceStores";
-import { generateUniqueId } from "../util/generateUniqueId";
+import {produce, enablePatches} from "immer";
+import {app} from "../app";
+import type {Location} from "history";
+import type {TickIntervalDecoratorFlag} from "../module";
+import type {Logger} from "../Logger";
+import {setAppState, setNavigationPrevented} from "../storeActions";
+import {type State, type StoreType} from "../sliceStores";
+import {generateUniqueId} from "../util/generateUniqueId";
 
 if (process.env.NODE_ENV === "development") enablePatches();
 
@@ -20,11 +20,12 @@ export interface ModuleLifecycleListener<RouteParam extends object = object, His
 }
 
 export class Module<RootState extends State, ModuleName extends keyof RootState["app"] & string, RouteParam extends object = object, HistoryState extends object = object>
-    implements ModuleLifecycleListener<RouteParam, HistoryState> {
+    implements ModuleLifecycleListener<RouteParam, HistoryState>
+{
     constructor(
         readonly name: ModuleName,
         readonly initialState: RootState["app"][ModuleName]
-    ) { }
+    ) {}
 
     async executeAsync<T extends any>(asyncFn: (signal: AbortSignal) => Promise<T>, key?: string) {
         const mapKey = key || generateUniqueId();
@@ -90,8 +91,8 @@ export class Module<RootState extends State, ModuleName extends keyof RootState[
             const [key, val] = b as [keyof typeof app.store, StoreType];
             return {
                 ...a,
-                key: val.getState(),
-            }
+                [key]: val.getState(),
+            };
         }, {} as State);
     }
 
@@ -118,9 +119,9 @@ export class Module<RootState extends State, ModuleName extends keyof RootState[
                 },
                 process.env.NODE_ENV === "development"
                     ? patches => {
-                        // No need to read "op", in will only be "replace"
-                        patchDescriptions = patches.map(_ => _.path.join("."));
-                    }
+                          // No need to read "op", in will only be "replace"
+                          patchDescriptions = patches.map(_ => _.path.join("."));
+                      }
                     : undefined
             );
             if (newState !== originalState) {
