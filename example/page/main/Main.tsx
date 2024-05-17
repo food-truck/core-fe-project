@@ -1,8 +1,7 @@
 import "./index.css";
 import React from "react";
-import {Route} from "../../../src";
-import {RouteProps, Redirect} from "react-router";
-import {Switch} from "react-router-dom";
+import {Routes, Route, cloneRoute} from "../../../src";
+import {Navigate} from "react-router";
 import {RootState} from "../../type/state";
 import {FTIRoutes} from "../../route";
 import {FTIRoute} from "../../route/type";
@@ -10,7 +9,7 @@ import {State as MainState} from "./type";
 
 interface Props extends Pick<MainState, "loading"> {}
 
-class Main extends React.Component<Props & RouteProps> {
+class Main extends React.Component<Props & any> {
     constructor(props: any) {
         super(props);
         this.state = {};
@@ -20,14 +19,16 @@ class Main extends React.Component<Props & RouteProps> {
         if (route?.hidden) return [];
         let routes = [];
         const path = this.pathName(route, parentPath);
-        if (route.component) {
+        if (route.Component) {
             if (route.role) {
-                routes.push(<Route key={path} path={path} component={route.component} />);
+                const clone = cloneRoute(<Route key={path} path={path} Component={route.Component} />);
+                routes.push(clone);
             } else {
                 return [];
             }
-        } else if (route.children && route.children.length > 0 && route.children[0].component) {
-            routes.push(<Route key={path} path={path} component={route.children[0].component} />);
+        } else if (route.children && route.children.length > 0 && route.children[0].Component) {
+            const clone = cloneRoute(<Route key={path} path={path} Component={route.children[0].Component} />);
+            routes.push(clone);
         }
         if (route.children) {
             for (const child of route.children) {
@@ -38,14 +39,12 @@ class Main extends React.Component<Props & RouteProps> {
     }
 
     override render() {
-        const {location} = this.props;
-
         return (
-            <Switch key={location && location.pathname} location={location}>
-                <Route exact key="/" path="/" component={() => <Redirect to="/Template" />} />
+            <Routes>
+                {cloneRoute(<Route caseSensitive key="/" path="/" Component={() => <Navigate to="/Template" />} />)}
 
                 {FTIRoutes.map(route => this.renderRoute(route))}
-            </Switch>
+            </Routes>
         );
     }
 

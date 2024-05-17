@@ -138,12 +138,12 @@ function renderRoot(EntryComponent: React.ComponentType, rootContainer: HTMLElem
     root.render(
         <Provider store={app.store}>
             <IdleDetector>
-                <BrowserRouter>
-                    <NavigationGuard message={navigationPreventionMessage} isPrevented={app.getState("navigationStore").navigationPrevented} />
-                    <ErrorBoundary>
-                        <EntryComponent />
-                    </ErrorBoundary>
-                </BrowserRouter>
+                {/* <BrowserRouter> */}
+                {/* <NavigationGuard message={navigationPreventionMessage} isPrevented={app.getState("navigationStore").navigationPrevented} /> */}
+                <ErrorBoundary>
+                    <EntryComponent />
+                </ErrorBoundary>
+                {/* </BrowserRouter> */}
             </IdleDetector>
         </Provider>
     );

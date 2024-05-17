@@ -4,10 +4,10 @@ import {async} from "../../../src";
 const route = {
     name: "Template",
     menu: "Template",
-    path: "Template",
+    path: "Template/:id?",
     role: "ADMIN",
     icon: <div />,
-    component: async(() => import("."), "Template"),
+    Component: async(() => import("."), "Template"),
     children: [],
 };
 export default route;

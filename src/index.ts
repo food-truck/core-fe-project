@@ -10,7 +10,7 @@ export {captureError} from "./util/error-util";
 export {ajax, uri, setAjaxRequestInterceptor, setAjaxResponseInterceptor} from "./util/network";
 export {ErrorBoundary} from "./util/ErrorBoundary";
 export {IdleDetector, IdleDetectorContext} from "./util/IdleDetector";
-export {Route} from "./util/Route";
+export {Routes, cloneRoute} from "./util/Route";
 export {type State} from "./sliceStores";
 export {useLoadingStatus} from "./hooks/loading";
 export {useSelector} from "./hooks/action";
@@ -27,6 +27,6 @@ export * from "./storeActions";
 export {register, type ErrorListener} from "./module";
 export {logger} from "./app";
 
-export {Switch, Redirect, NavLink, useLocation, useHistory, useParams, useRouteMatch, matchPath} from "react-router-dom";
+export {Route, NavLink, useLocation, useParams, matchPath} from "react-router-dom";
 export type {Location} from "history";
 export {produce} from "immer";
