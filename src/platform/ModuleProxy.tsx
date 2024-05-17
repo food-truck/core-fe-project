@@ -11,7 +11,6 @@ import type {RouterState} from "../sliceStores";
 type RouteComponentProps = RouterState & {match: ReturnType<typeof useMatch>};
 let startupModuleName: string | null = null;
 
-
 export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> {
     attachLifecycle<P extends object>(ComponentType: React.ComponentType<P>): React.ComponentType<P> {
         const moduleName = this.module.name as string;
