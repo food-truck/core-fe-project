@@ -1,7 +1,7 @@
 import React from "react";
 import {setIdleState} from "../storeActions";
 import type {IdleState, State} from "../sliceStores";
-import { app } from "../app";
+import {app} from "../app";
 
 export const DEFAULT_IDLE_TIMEOUT = 300;
 

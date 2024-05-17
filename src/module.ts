@@ -1,4 +1,4 @@
-import { coreRegister } from "@wonder/core-core";
+import {coreRegister} from "@wonder/core-core";
 import {app} from "./app";
 import {Exception} from "./Exception";
 import {ModuleProxy} from "./platform/ModuleProxy";
@@ -17,7 +17,7 @@ export interface ErrorListener {
 
 export type ActionHandler<ReturnType> = (...args: any[]) => Promise<ReturnType>;
 
-export const register = coreRegister(ModuleProxy<any>)
+export const register = coreRegister(ModuleProxy<any>);
 
 export const executeAction = async ({actionName, handler, payload}: {actionName: string; handler: Function; payload: any[]}) => {
     try {

@@ -1,12 +1,12 @@
-import { enablePatches } from "immer";
-import { app } from "../app";
-import type { Location } from "history";
-import type { TickIntervalDecoratorFlag } from "../module";
-import type { Logger } from "../Logger";
-import { setNavigationPrevented } from "../storeActions";
-import { CoreModule } from "@wonder/core-core"
-import { type State } from "../sliceStores";
-import { generateUniqueId } from "../util/generateUniqueId";
+import {enablePatches} from "immer";
+import {app} from "../app";
+import type {Location} from "history";
+import type {TickIntervalDecoratorFlag} from "../module";
+import type {Logger} from "../Logger";
+import {setNavigationPrevented} from "../storeActions";
+import {CoreModule} from "@wonder/core-core";
+import {type State} from "../sliceStores";
+import {generateUniqueId} from "../util/generateUniqueId";
 
 if (process.env.NODE_ENV === "development") enablePatches();
 
@@ -20,8 +20,11 @@ export interface ModuleLifecycleListener<RouteParam extends object = object, His
     onTick: (() => void) & TickIntervalDecoratorFlag;
 }
 
-export class Module<RootState extends State, ModuleName extends keyof RootState["app"] & string, RouteParam extends object = object, HistoryState extends object = object> extends CoreModule<RootState, ModuleName> implements ModuleLifecycleListener<RouteParam, HistoryState> {
-    async executeAsync<T extends any>(asyncFn: (signal: AbortSignal) => Promise<T>, key?: string) {
+export class Module<RootState extends State, ModuleName extends keyof RootState["app"] & string, RouteParam extends object = object, HistoryState extends object = object>
+    extends CoreModule<RootState, ModuleName>
+    implements ModuleLifecycleListener<RouteParam, HistoryState>
+{
+    async executeAsync<T>(asyncFn: (signal: AbortSignal) => Promise<T>, key?: string) {
         const mapKey = key || generateUniqueId();
         const controller = new AbortController();
         if (!app.actionControllers[this.name]) {

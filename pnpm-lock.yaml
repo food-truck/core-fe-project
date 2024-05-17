@@ -24,8 +24,8 @@ dependencies:
     specifier: 5.3.3
     version: 5.3.3
   '@wonder/core-core':
-    specifier: ^0.0.2
-    version: 0.0.2(react@18.2.0)
+    specifier: ^0.0.5
+    version: 0.0.5(react@18.2.0)
   axios:
     specifier: 1.6.1
     version: 1.6.1
@@ -1769,8 +1769,8 @@ packages:
       - supports-color
     dev: true
 
-  /@wonder/core-core@0.0.2(react@18.2.0):
-    resolution: {integrity: sha1-DRhuYO2FC39dvNb8SfeVOJBaCfk=}
+  /@wonder/core-core@0.0.5(react@18.2.0):
+    resolution: {integrity: sha1-ssxLo7FvfRhBSZwVHE1ezrXDEiA=}
     engines: {node: '>=14'}
     peerDependencies:
       react: '>=18.0.0'

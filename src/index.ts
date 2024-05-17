@@ -1,10 +1,6 @@
 import "./debug";
 
-export {
-    delay,
-    setAppState,
-    setLoadingState,
-} from "@wonder/core-core"
+export {delay, setAppState, setLoadingState} from "@wonder/core-core";
 export * as immer from "immer";
 export {bootstrap} from "./platform/bootstrap";
 export {Module} from "./platform/Module";

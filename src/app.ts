@@ -1,12 +1,12 @@
-import {  type History } from "history";
-import { type Logger, type LoggerConfig, LoggerImpl } from "./Logger";
-import { broswerHistory, store, type State } from "./sliceStores";
-import type { ErrorHandler } from "./module";
-import { coreApp } from "@wonder/core-core";
+import {type History} from "history";
+import {type Logger, type LoggerConfig, LoggerImpl} from "./Logger";
+import {broswerHistory, store, type State} from "./sliceStores";
+import type {ErrorHandler} from "./module";
+import {coreApp} from "@wonder/core-core";
 
 interface App {
     readonly history: History;
-    readonly store: typeof store & typeof coreApp.store,
+    readonly store: typeof store & typeof coreApp.store;
     readonly logger: LoggerImpl;
     loggerConfig: LoggerConfig | null;
     errorHandler: ErrorHandler;

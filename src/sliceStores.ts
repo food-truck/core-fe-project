@@ -1,20 +1,14 @@
 import {type Location, type Action, createBrowserHistory} from "history";
-import {create, type StateCreator, type StoreMutatorIdentifier, type UseBoundStore} from "zustand";
+import {DEFAULT_IDLE_TIMEOUT} from "./util/IdleDetector";
+import {create} from "zustand";
 import {immer} from "zustand/middleware/immer";
-import { immer as immerMiddleWare } from "zustand/middleware/immer";
-import { devtools, subscribeWithSelector } from "zustand/middleware";
-import { DEFAULT_IDLE_TIMEOUT } from "./util/IdleDetector";
-
+import {devtools, subscribeWithSelector} from "zustand/middleware";
+import type {AppState, ImmerStateCreator, LoadingState} from "@wonder/core-core/lib/sliceStores";
 
 export const broswerHistory = createBrowserHistory();
 
-export type ImmerStateCreator<T, Mps extends [StoreMutatorIdentifier, unknown][] = [], Mcs extends [StoreMutatorIdentifier, unknown][] = []> = StateCreator<T, [...Mps, ["zustand/immer", never]], Mcs>;
-
-export const createStore = <T extends object>(creater: ImmerStateCreator<T>) => create<T>()(subscribeWithSelector(immerMiddleWare(devtools(creater))));
-
-export interface LoadingState {
-    [key: string]: any;
-}
+export const createStore = <T extends object>(creater: ImmerStateCreator<T>) => create<T>()(subscribeWithSelector(immer(devtools(creater))));
+export type StoreType = ReturnType<typeof createStore>;
 
 export interface NavigationState {
     navigationPrevented: boolean;
@@ -23,10 +17,6 @@ export interface NavigationState {
 export interface IdleState {
     timeout: number;
     state: "active" | "idle";
-}
-
-export interface AppState {
-    [module: string]: any;
 }
 
 export interface RouterState {
@@ -41,9 +31,6 @@ export interface State {
     navigationStore: NavigationState;
     loading: LoadingState;
 }
-
-export type StoreType = ReturnType<typeof createStore>;
-
 
 const routerStore = createStore<RouterState>(() => ({
     location: broswerHistory.location,
@@ -61,6 +48,6 @@ const idleStore = createStore<IdleState>(() => ({
 
 export const store = {
     router: routerStore,
-    navigationStore: navigationStore,
+    navigationStore,
     idle: idleStore,
 };
