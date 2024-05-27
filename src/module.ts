@@ -3,7 +3,7 @@ import {app} from "./app";
 import {Exception} from "./Exception";
 import {ModuleProxy} from "./platform/ModuleProxy";
 import {captureError} from "./util/error-util";
-import {stringifyWithMask} from "./util/json-util";
+import {stringifyWithMask} from "@wonder/core-core";
 
 export interface TickIntervalDecoratorFlag {
     tickInterval?: number;

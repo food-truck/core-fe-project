@@ -13,9 +13,8 @@ import {captureError} from "../util/error-util";
 import {DEFAULT_IDLE_TIMEOUT, IdleDetector} from "../util/IdleDetector";
 import type {Location} from "history";
 import {setIdleTimeout} from "../storeActions";
-import {delay} from "../util/taskUtils";
 import {Provider, createZustandContext} from "../ZustandProvider";
-import {errorToException, type LoggerConfig} from "@wonder/core-core";
+import {errorToException, type LoggerConfig, delay} from "@wonder/core-core";
 
 /**
  * Configuration for frontend version check.

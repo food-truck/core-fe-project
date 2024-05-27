@@ -5,7 +5,7 @@ import type {TickIntervalDecoratorFlag} from "../module";
 import {type Logger, CoreModule} from "@wonder/core-core";
 import {setNavigationPrevented} from "../storeActions";
 import {type State} from "../sliceStores";
-import {generateUniqueId} from "../util/generateUniqueId";
+import {generateUniqueId} from "@wonder/core-core";
 
 if (process.env.NODE_ENV === "development") enablePatches();
 
