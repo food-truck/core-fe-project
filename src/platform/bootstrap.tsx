@@ -9,13 +9,13 @@ import {APIException} from "../Exception";
 import {ErrorBoundary} from "../util/ErrorBoundary";
 import {ajax} from "../util/network";
 import {isBrowserSupported, isIOS} from "../util/navigator-util";
-import {captureError, errorToException} from "../util/error-util";
+import {captureError} from "../util/error-util";
 import {DEFAULT_IDLE_TIMEOUT, IdleDetector} from "../util/IdleDetector";
 import type {Location} from "history";
-import type {LoggerConfig} from "../Logger";
 import {setIdleTimeout} from "../storeActions";
 import {delay} from "../util/taskUtils";
 import {Provider, createZustandContext} from "../ZustandProvider";
+import {errorToException, type LoggerConfig} from "@wonder/core-core";
 
 /**
  * Configuration for frontend version check.

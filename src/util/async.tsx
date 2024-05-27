@@ -1,7 +1,7 @@
 import React from "react";
 import {app} from "../app";
-import {setLoadingState} from "@wonder/core-core";
-import {captureError, errorToException} from "./error-util";
+import {setLoadingState, errorToException} from "@wonder/core-core";
+import {captureError} from "./error-util";
 
 type ReactComponentKeyOf<T> = {[P in keyof T]: T[P] extends React.ComponentType<any> ? P : never}[keyof T];
 

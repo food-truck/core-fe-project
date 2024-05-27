@@ -2,9 +2,8 @@ import {enablePatches} from "immer";
 import {app} from "../app";
 import type {Location} from "history";
 import type {TickIntervalDecoratorFlag} from "../module";
-import type {Logger} from "../Logger";
+import {type Logger, CoreModule} from "@wonder/core-core";
 import {setNavigationPrevented} from "../storeActions";
-import {CoreModule} from "@wonder/core-core";
 import {type State} from "../sliceStores";
 import {generateUniqueId} from "../util/generateUniqueId";
 

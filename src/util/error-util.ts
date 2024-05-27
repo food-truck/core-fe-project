@@ -3,34 +3,13 @@ import {app} from "../app";
 import {isBrowserSupported} from "./navigator-util";
 import {GLOBAL_ERROR_ACTION, GLOBAL_PROMISE_REJECTION_ACTION, sendEventLogs} from "../platform/bootstrap";
 import type {ErrorHandler} from "../module";
+import {errorToException} from "@wonder/core-core";
 
 let errorHandlerRunning = false;
 
 interface ErrorExtra {
     actionPayload?: string; // masked
     extraStacktrace?: string;
-}
-
-export function errorToException(error: unknown): Exception {
-    if (error instanceof Exception) {
-        return error;
-    } else {
-        let message: string;
-        if (!error) {
-            message = "[No Message]";
-        } else if (typeof error === "string") {
-            message = error;
-        } else if (error instanceof Error) {
-            message = error.message;
-        } else {
-            try {
-                message = JSON.stringify(error);
-            } catch (e) {
-                message = "[Unknown]";
-            }
-        }
-        return new JavaScriptException(message, error);
-    }
 }
 
 export function captureError(error: unknown, action: string, extra: ErrorExtra = {}): Exception {
