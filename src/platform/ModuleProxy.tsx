@@ -1,6 +1,6 @@
 import React from "react";
 import {app} from "../app";
-import {executeAction, type ErrorListener} from "../module";
+import {executeAction} from "../module";
 import {Module, type ModuleLifecycleListener} from "./Module";
 import type {Location} from "history";
 import {useMatch} from "react-router-dom";

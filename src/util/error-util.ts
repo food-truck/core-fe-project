@@ -1,9 +1,8 @@
-import {Exception, JavaScriptException} from "../Exception";
 import {app} from "../app";
 import {isBrowserSupported} from "./navigator-util";
 import {GLOBAL_ERROR_ACTION, GLOBAL_PROMISE_REJECTION_ACTION, sendEventLogs} from "../platform/bootstrap";
 import type {ErrorHandler} from "../module";
-import {errorToException} from "@wonder/core-core";
+import {errorToException, Exception, JavaScriptException} from "@wonder/core-core";
 
 let errorHandlerRunning = false;
 

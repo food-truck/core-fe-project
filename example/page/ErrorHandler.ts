@@ -1,4 +1,4 @@
-import {ErrorListener, Exception, APIException} from "../../src";
+import {ErrorListener, Exception} from "../../src";
 
 export class ErrorHandler implements ErrorListener {
     onError(exception: Exception) {

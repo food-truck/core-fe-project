@@ -5,7 +5,6 @@ import axios from "axios";
 import {NavigationGuard} from "./NavigationGuard";
 import {app} from "../app";
 import {type ErrorListener, executeAction} from "../module";
-import {APIException} from "../Exception";
 import {ErrorBoundary} from "../util/ErrorBoundary";
 import {ajax} from "../util/network";
 import {isBrowserSupported, isIOS} from "../util/navigator-util";
@@ -14,7 +13,7 @@ import {DEFAULT_IDLE_TIMEOUT, IdleDetector} from "../util/IdleDetector";
 import type {Location} from "history";
 import {setIdleTimeout} from "../storeActions";
 import {Provider, createZustandContext} from "../ZustandProvider";
-import {errorToException, type LoggerConfig, delay} from "@wonder/core-core";
+import {errorToException, type LoggerConfig, delay, APIException} from "@wonder/core-core";
 
 /**
  * Configuration for frontend version check.
