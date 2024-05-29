@@ -21,6 +21,7 @@ export {Mutex} from "./decorator/Mutex";
 export {RetryOnNetworkConnectionError} from "./decorator/RetryOnNetworkConnectionError";
 export {SilentOnNetworkConnectionError} from "./decorator/SilentOnNetworkConnectionError";
 export {Subscribe} from "./decorator/Subscribe";
+export {app} from "./app";
 
 export * from "./storeActions";
 export {register, type ErrorListener} from "./module";
