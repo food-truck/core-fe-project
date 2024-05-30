@@ -4,7 +4,6 @@ import {executeAction} from "../module";
 import {Module, type ModuleLifecycleListener} from "./Module";
 import type {Location} from "history";
 import {useMatch} from "react-router-dom";
-import {setNavigationPrevented} from "../storeActions";
 import {CoreModuleProxy} from "@wonder/core-core";
 import type {RouterState} from "../sliceStores";
 
@@ -67,7 +66,6 @@ export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> 
                             history_state: JSON.stringify(currentLocation.state),
                         },
                     });
-                    setNavigationPrevented(false);
                 }
 
                 /**
@@ -95,19 +93,12 @@ export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> 
                             history_state: JSON.stringify(currentLocation.state),
                         },
                     });
-
-                    setNavigationPrevented(false);
                 }
             }
 
             override componentWillUnmount() {
                 if (this.hasOwnLifecycle("onDestroy")) {
                     actions.onDestroy();
-                }
-
-                const currentLocation = (this.props as any).location;
-                if (currentLocation) {
-                    setNavigationPrevented(false);
                 }
 
                 Object.entries(app.actionControllers).forEach(([actionModuleName, actionControllersMap]) => {

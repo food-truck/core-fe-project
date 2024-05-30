@@ -130,3 +130,62 @@ class TemplateModule extends Module<RootState, "Template"> {
     }
 }
 ```
+
+## Router Changed
+Now we updated `react-router-dom` is [V6](https://reactrouter.com/en/main).
+
+- before
+```
+import {Route} from "@wonder/core-fe";
+import {Switch} from "react-router-dom";
+
+override render() {
+    const {location} = this.props;
+
+    return (
+        <Switch key={location && location.pathname} location={location}>
+            <Route exact key="/" path="/" component={() => <Redirect to="/Template" />} />
+
+            {FTIRoutes.map(route => this.renderRoute(route))}
+        </Switch>
+    );
+}
+```
+
+- after
+
+Add new api `Routes`, `cloneRoute`. `<Route />` need wrap with `cloneRoute` function. Than `component` => `Component`.
+```
+import {Routes, Route, cloneRoute} from "@wonder/core-fe";
+
+override render() {
+    return (
+        <Routes>
+            {cloneRoute(<Route caseSensitive key="/" path="/" Component={() => <Navigate to="/Template" />} />)}
+
+            {FTIRoutes.map(route => this.renderRoute(route))}
+        </Routes>
+    );
+}
+```
+
+- removed
+
+In before, because `connected-react-router` dependency, we can lister router change event outsite of `<Router />` component. But `connected-react-router` not support `v6`, so we remove navigationStore state, than remove `navigationPrevented` api. If you need to prevent navigation, you can use `useBlocker` hook. This is [docs](https://reactrouter.com/en/main/hooks/use-blocker) and [example](;;;;;;https://stackblitz.com/github/remix-run/react-router/tree/main/examples/navigation-blocking?file=src%2Fapp.tsx). It is very easy to use!
+
+like this:
+```
+const blocker = useBlocker(navigationPrevented)
+
+useEffect(() => {
+    if (!navigationPrevented) return;
+
+    const result = window.confirm("Do you want to leave?");
+    if (result) {
+        blocker.reset?.();
+    } else {
+        blocker.proceed?.();
+    }
+}, [blocker, navigationPrevented])
+```
+

@@ -3,7 +3,6 @@ import {app} from "../app";
 import type {Location} from "history";
 import type {TickIntervalDecoratorFlag} from "../module";
 import {type Logger, CoreModule, generateUniqueId} from "@wonder/core-core";
-import {setNavigationPrevented} from "../storeActions";
 import {type State} from "../sliceStores";
 
 if (process.env.NODE_ENV === "development") enablePatches();
@@ -65,9 +64,5 @@ export class Module<RootState extends State, ModuleName extends keyof RootState[
 
     get logger(): Logger {
         return app.logger;
-    }
-
-    setNavigationPrevented(isPrevented: boolean) {
-        setNavigationPrevented(isPrevented);
     }
 }
