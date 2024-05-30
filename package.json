@@ -1,6 +1,6 @@
 {
-    "name": "@wonder/core-fe-test",
-    "version": "0.0.3",
+    "name": "@wonder/core-fe",
+    "version": "2.0.0-alpha.1",
     "main": "lib/index.js",
     "module": "lib/index.js",
     "types": "lib/index.d.ts",
