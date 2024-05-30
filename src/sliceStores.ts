@@ -7,10 +7,6 @@ export const broswerHistory = createBrowserHistory();
 
 export type StoreType = ReturnType<typeof createStore>;
 
-export interface NavigationState {
-    navigationPrevented: boolean;
-}
-
 export interface IdleState {
     timeout: number;
     state: "active" | "idle";
@@ -25,17 +21,12 @@ export interface State {
     app: AppState;
     router: RouterState;
     idle: IdleState;
-    navigationStore: NavigationState;
     loading: LoadingState;
 }
 
 const routerStore = createStore<RouterState>(() => ({
     location: broswerHistory.location,
     action: broswerHistory.action,
-}));
-
-const navigationStore = createStore<NavigationState>(() => ({
-    navigationPrevented: false,
 }));
 
 const idleStore = createStore<IdleState>(() => ({
@@ -45,6 +36,5 @@ const idleStore = createStore<IdleState>(() => ({
 
 export const store = {
     router: routerStore,
-    navigationStore,
     idle: idleStore,
 };
