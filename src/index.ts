@@ -34,7 +34,7 @@ export {Mutex} from "./decorator/Mutex";
 export {RetryOnNetworkConnectionError} from "./decorator/RetryOnNetworkConnectionError";
 export {SilentOnNetworkConnectionError} from "./decorator/SilentOnNetworkConnectionError";
 export {Subscribe} from "./decorator/Subscribe";
-export {createActionHandlerDecorator} from "./decorator/createActionHandlerDecorator";
+export {createActionHandlerDecorator, type ActionHandlerWithMetaData} from "./decorator/createActionHandlerDecorator";
 export {app} from "./app";
 
 export * from "./storeActions";
