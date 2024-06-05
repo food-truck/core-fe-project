@@ -53,11 +53,13 @@
         "yargs": "17.7.2"
     },
     "dependencies": {
-        "@types/react": "^18.3.3",
-        "@types/react-dom": "^18.3.0",
+        "@types/history": "4.7.11",
+        "@types/react-router": "5.1.20",
+        "@types/react-router-dom": "5.3.3",
         "@wonder/core-core": "^0.0.10",
         "axios": "1.6.1",
         "core-js": "3.33.0",
+        "history": "4.10.1",
         "immer": "^10.1.1",
         "react-router": "6.22.3",
         "react-router-dom": "6.22.3",
@@ -66,6 +68,7 @@
         "zustand": "^4.5.2"
     },
     "peerDependencies": {
+        "@types/react": ">=18.0.0",
         "@types/react-dom": ">=18.0.0",
         "react": ">=18.0.0",
         "react-dom": ">=18.0.0"

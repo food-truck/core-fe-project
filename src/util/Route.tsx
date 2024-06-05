@@ -2,12 +2,12 @@ import React from "react";
 import {createBrowserRouter, createRoutesFromElements, RouterProvider, Navigate, type RouteProps, useLocation, useMatch, useNavigate, useNavigationType} from "react-router-dom";
 import {ErrorBoundary} from "./ErrorBoundary";
 import {app} from "../app";
-import {setRouterState, setRouterNavigateState} from "../storeActions";
+import {setRouterState} from "../storeActions";
 
 export const Routes = ({children}: {children: React.ReactNode}) => {
     const router = createBrowserRouter(createRoutesFromElements(children));
 
-    setRouterNavigateState(router.navigate);
+    app.navigate = router.navigate;
 
     router.subscribe(state => {
         setRouterState({

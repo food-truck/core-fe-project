@@ -1,10 +1,11 @@
-import {type Location, createBrowserRouter} from "react-router-dom";
+import {type Location, type Action, createBrowserHistory} from "history";
 import {DEFAULT_IDLE_TIMEOUT} from "./util/IdleDetector";
 import {createStore} from "@wonder/core-core";
 import type {AppState, LoadingState} from "@wonder/core-core/lib/sliceStores";
 
+export const broswerHistory = createBrowserHistory();
+
 export type StoreType = ReturnType<typeof createStore>;
-export type BrowserRouterType = ReturnType<typeof createBrowserRouter>;
 
 export interface IdleState {
     timeout: number;
@@ -12,9 +13,8 @@ export interface IdleState {
 }
 
 export interface RouterState {
-    location: Location | null;
-    action: BrowserRouterType["state"]["historyAction"] | null;
-    navigate: BrowserRouterType["navigate"] | null;
+    location: Location;
+    action: Action;
 }
 
 export interface State {
@@ -25,9 +25,8 @@ export interface State {
 }
 
 const routerStore = createStore<RouterState>(() => ({
-    location: null,
-    action: null,
-    navigate: null,
+    location: broswerHistory.location,
+    action: broswerHistory.action,
 }));
 
 const idleStore = createStore<IdleState>(() => ({

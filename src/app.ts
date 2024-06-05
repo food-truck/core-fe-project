@@ -1,6 +1,7 @@
 import {type Logger, type LoggerConfig, LoggerImpl, coreApp} from "@wonder/core-core";
 import {store, type State} from "./sliceStores";
 import type {ErrorHandler} from "./module";
+import type {To, NavigateOptions} from "react-router-dom";
 
 interface App {
     readonly store: typeof store & typeof coreApp.store;
@@ -10,6 +11,7 @@ interface App {
     getState: <K extends keyof State>(key: K) => State[K];
     // We will temporarily store the asynchronous controllers handled by the module.executeAsync method here, where the user can cancel any outstanding asynchronous operations.
     actionControllers: Record<string, Record<string, AbortController>>;
+    navigate: (to: To, opt?: NavigateOptions) => Promise<void> | ((to: number) => Promise<void>);
 }
 
 export const app = createApp();
@@ -25,5 +27,6 @@ function createApp(): App {
         loggerConfig: null,
         errorHandler() {},
         actionControllers: {},
+        navigate: () => new Promise<void>(() => {}),
     };
 }
