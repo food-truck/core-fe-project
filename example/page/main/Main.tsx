@@ -6,6 +6,7 @@ import {RootState} from "../../type/state";
 import {FTIRoutes} from "../../route";
 import {FTIRoute} from "../../route/type";
 import {State as MainState} from "./type";
+import {app} from "../../../src/app";
 
 interface Props extends Pick<MainState, "loading"> {}
 
@@ -40,11 +41,15 @@ class Main extends React.Component<Props & any> {
 
     override render() {
         return (
-            <Routes>
-                {cloneRoute(<Route caseSensitive key="/" path="/" Component={() => <Navigate to="/Template" />} />)}
+            <div>
+                <button onClick={() => app.store.router.getState().navigate?.("/Test")}>Go Test Page</button>
 
-                {FTIRoutes.map(route => this.renderRoute(route))}
-            </Routes>
+                <Routes>
+                    {cloneRoute(<Route caseSensitive key="/" path="/" Component={() => <Navigate to="/Template" />} />)}
+
+                    {FTIRoutes.map(route => this.renderRoute(route))}
+                </Routes>
+            </div>
         );
     }
 
@@ -62,11 +67,5 @@ class Main extends React.Component<Props & any> {
         }
     }
 }
-
-const mapStatesToProps = (state: RootState): Props => {
-    return {
-        loading: false,
-    };
-};
 
 export default Main;

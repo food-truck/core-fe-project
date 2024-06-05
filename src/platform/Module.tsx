@@ -1,6 +1,6 @@
 import {enablePatches} from "immer";
 import {app} from "../app";
-import type {Location} from "history";
+import type {Location} from "react-router-dom";
 import type {TickIntervalDecoratorFlag} from "../module";
 import {type Logger, CoreModule, generateUniqueId} from "@wonder/core-core";
 import {type State} from "../sliceStores";

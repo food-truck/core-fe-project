@@ -1,8 +1,6 @@
 import React from "react";
 import {createRoot} from "react-dom/client";
-import {BrowserRouter} from "react-router-dom";
 import axios from "axios";
-import {NavigationGuard} from "./NavigationGuard";
 import {app} from "../app";
 import {type ErrorListener, executeAction} from "../module";
 import {ErrorBoundary} from "../util/ErrorBoundary";
@@ -10,7 +8,6 @@ import {ajax} from "../util/network";
 import {isBrowserSupported, isIOS} from "../util/navigator-util";
 import {captureError} from "../util/error-util";
 import {DEFAULT_IDLE_TIMEOUT, IdleDetector} from "../util/IdleDetector";
-import type {Location} from "history";
 import {setIdleTimeout} from "../storeActions";
 import {Provider, createZustandContext} from "../ZustandProvider";
 import {errorToException, type LoggerConfig, delay, APIException} from "@wonder/core-core";
@@ -56,7 +53,6 @@ export function bootstrap(option: BootstrapOption): void {
     detectOldBrowser(option.browserConfig?.onOldBrowserDetected);
     setupGlobalErrorHandler(option.errorListener);
     setupAppExitListener(option.loggerConfig?.serverURL);
-    setupLocationChangeListener(option.browserConfig?.onLocationChange);
     setIdleTimeout(option.idleTimeoutInSecond ?? DEFAULT_IDLE_TIMEOUT);
     runBackgroundLoop(option.loggerConfig, option.versionConfig);
     createZustandContext();
@@ -136,12 +132,9 @@ function renderRoot(EntryComponent: React.ComponentType, rootContainer: HTMLElem
     root.render(
         <Provider store={app.store}>
             <IdleDetector>
-                {/* <BrowserRouter> */}
-                {/* <NavigationGuard message={navigationPreventionMessage} isPrevented={app.getState("navigationStore").navigationPrevented} /> */}
                 <ErrorBoundary>
                     <EntryComponent />
                 </ErrorBoundary>
-                {/* </BrowserRouter> */}
             </IdleDetector>
         </Provider>
     );
@@ -175,12 +168,6 @@ function setupAppExitListener(eventServerURL?: string) {
             },
             false
         );
-    }
-}
-
-function setupLocationChangeListener(listener?: (location: Location) => void) {
-    if (listener) {
-        app.history.listen(listener);
     }
 }
 

@@ -41,5 +41,4 @@ export * from "./storeActions";
 export {register, type ErrorListener} from "./module";
 export {logger} from "./app";
 export {Route, NavLink, Navigate, useLocation, useNavigate, useMatch, useParams, matchPath} from "react-router-dom";
-export type {Location} from "history";
 export {produce} from "immer";

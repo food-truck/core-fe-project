@@ -1,7 +1,16 @@
 import {app} from "./app";
 import type {IdleState, RouterState} from "./sliceStores";
 
-export const setRouterState = (payload: RouterState) => {
+export const setRouterNavigateState = (payload: RouterState["navigate"]) => {
+    app.store.router.setState(
+        draft => {
+            draft.navigate = payload;
+        },
+        false,
+        "@@framework/router"
+    );
+};
+export const setRouterState = (payload: Omit<RouterState, "navigate">) => {
     app.store.router.setState(
         draft => {
             draft.action = payload.action;

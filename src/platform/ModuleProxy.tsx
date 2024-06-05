@@ -2,8 +2,7 @@ import React from "react";
 import {app} from "../app";
 import {executeAction} from "../module";
 import {Module, type ModuleLifecycleListener} from "./Module";
-import type {Location} from "history";
-import {useMatch} from "react-router-dom";
+import {type Location, useMatch} from "react-router-dom";
 import {CoreModuleProxy} from "@wonder/core-core";
 import type {RouterState} from "../sliceStores";
 
@@ -170,7 +169,7 @@ export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> 
                             elapsedTime: Date.now() - startTime,
                             info: {
                                 route_params: JSON.stringify(props.match?.params),
-                                history_state: JSON.stringify(props.location.state),
+                                history_state: JSON.stringify(props.location?.state),
                             },
                         });
                     } else {
@@ -193,7 +192,7 @@ export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> 
                             elapsedTime: Date.now() - startTime,
                             info: {
                                 route_params: JSON.stringify(props.match?.params),
-                                history_state: JSON.stringify(props.location.state),
+                                history_state: JSON.stringify(props.location?.state),
                             },
                         });
                     } else {

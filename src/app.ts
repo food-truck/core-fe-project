@@ -1,10 +1,8 @@
-import {type History} from "history";
 import {type Logger, type LoggerConfig, LoggerImpl, coreApp} from "@wonder/core-core";
-import {broswerHistory, store, type State} from "./sliceStores";
+import {store, type State} from "./sliceStores";
 import type {ErrorHandler} from "./module";
 
 interface App {
-    readonly history: History;
     readonly store: typeof store & typeof coreApp.store;
     readonly logger: LoggerImpl;
     loggerConfig: LoggerConfig | null;
@@ -22,7 +20,6 @@ function createApp(): App {
 
     return {
         getState: <K extends keyof State>(key: K) => combineStore[key].getState() as State[K],
-        history: broswerHistory,
         store: combineStore,
         logger: new LoggerImpl(),
         loggerConfig: null,
