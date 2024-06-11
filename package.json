@@ -56,7 +56,7 @@
         "@types/history": "4.7.11",
         "@types/react-router": "5.1.20",
         "@types/react-router-dom": "5.3.3",
-        "@wonder/core-core": "^0.0.10",
+        "@wonder/core-core": "^0.1.0-alpha.1",
         "axios": "1.6.1",
         "core-js": "3.33.0",
         "history": "4.10.1",

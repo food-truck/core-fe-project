@@ -36,7 +36,7 @@ function createTimer(time: number, callback: (idleState: IdleState["state"]) => 
 
 export function IdleDetector(props: Props) {
     const {children} = props;
-    const {timeout, state} = app.store.idle.getState();
+    const {timeout, state} = app.store.idle(state => state);
     const stateRef = React.useRef(state);
     stateRef.current = state;
 

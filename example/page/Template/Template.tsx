@@ -13,12 +13,10 @@ export default function Example() {
 
     const onItemClick = (item: string, index: number) => {
         navigate(`/Template/${item}?index=${index}`);
-        // console.info("app router state >>>", app.getState("router"));
     };
 
     const onRefetch = () => {
         actions.getTodoList();
-        navigate(`/Template`);
     };
 
     return (

@@ -29,7 +29,6 @@ export class MockData {
 
 class TemplateModule extends Module<RootState, "Template"> {
     override async onLocationMatched(routeParam: object, location: ModuleLocation<object>) {
-        // console.info("routeParam", routeParam, location);
         const list = await MockData.todoList();
     }
 

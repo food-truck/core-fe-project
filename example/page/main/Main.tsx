@@ -25,8 +25,8 @@ const pathName = (route: FTIRoute, parentPath: string | undefined) => {
 }
 
 export default () => {
-    const location = app.store.router(state => state.location)
-    const pageName = location.pathname === "/Test" ? "Template" : "Test"
+    const pathname = app.store.router(state => state.location.pathname)
+    const pageName = pathname === "/Test" ? "Template" : "Test"
 
     const renderRoute = (route: FTIRoute, parentPath?: any): JSX.Element[] => {
         if (route?.hidden) return [];
