@@ -1,5 +1,4 @@
 import {createActionHandlerDecorator, type ActionHandlerWithMetaData} from "@wonder/core-core";
-import type {Module} from "../platform/Module";
 
 /**
  * If specified, the action cannot be entered by other sagas during execution.

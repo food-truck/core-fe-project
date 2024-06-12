@@ -1,5 +1,4 @@
-import {NetworkConnectionException} from "@wonder/core-core";
-import {createActionHandlerDecorator, type ActionHandlerWithMetaData} from "@wonder/core-core";
+import {createActionHandlerDecorator, type ActionHandlerWithMetaData, NetworkConnectionException} from "@wonder/core-core";
 import {app} from "../app";
 
 /**
