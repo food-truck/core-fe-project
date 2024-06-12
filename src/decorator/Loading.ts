@@ -1,5 +1,4 @@
-import {setLoadingState} from "@wonder/core-core";
-import {createActionHandlerDecorator, type ActionHandlerWithMetaData} from "./createActionHandlerDecorator";
+import {setLoadingState, createActionHandlerDecorator, type ActionHandlerWithMetaData} from "@wonder/core-core";
 
 /**
  * To mark state.loading[identifier] during action execution.

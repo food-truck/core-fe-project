@@ -4,6 +4,14 @@
 
 core-fev2 is a frontend framework based on react, zustand, it's designed to support our own projects.
 
+## Documentation
+
+For detailed documentation on the core libraries used in this framework, please refer to the following links:
+
+- [React](https://reactjs.org/docs/getting-started.html)
+- [Zustand](https://docs.pmnd.rs/zustand/getting-started/introduction)
+- [@wonder/core-core](https://github.com/food-truck/core-core-project)
+
 ## Local Dev
 
 This project uses [pnpm](https://pnpm.io/) to manage the dependencies.

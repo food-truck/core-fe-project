@@ -23,8 +23,13 @@ export function Subscribe<S extends object, T, M extends Module<any, any>, K ext
             );
         });
 
-        return () => {
+        const newFunction = () => {
             unsubscribe();
         };
+
+        Reflect.defineProperty(newFunction, "name", {
+            value: _context.name,
+        });
+        return newFunction
     };
 }
