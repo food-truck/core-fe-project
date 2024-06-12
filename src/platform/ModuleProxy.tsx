@@ -13,14 +13,13 @@ let startupModuleName: string | null = null;
 export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> {
     attachLifecycle<P extends object>(ComponentType: React.ComponentType<P>): React.ComponentType<P> {
         const moduleName = this.module.name as string;
-        const module = this.module;
         const lifecycleListener = this.module as ModuleLifecycleListener;
         const modulePrototype = Object.getPrototypeOf(lifecycleListener);
         const actions = this.actions as any;
+        let timer: NodeJS.Timeout;
 
         return class extends React.PureComponent<P> {
             static displayName = `Module[${moduleName}]`;
-            private timer: number | NodeJS.Timeout = -1;
             private tickCount: number = 0;
             private mountedTime: number = Date.now();
 
@@ -78,7 +77,7 @@ export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> 
                 if (currentLocation && currentRouteParams && !this.areLocationsEqual(currentLocation, prevLocation) && this.hasOwnLifecycle("onLocationMatched")) {
                     const action = `${moduleName}/@@LOCATION_MATCHED`;
                     const startTime = Date.now();
-
+                    console.info(app.actionControllers);
                     executeAction({
                         actionName: action,
                         handler: lifecycleListener.onLocationMatched.bind(lifecycleListener),
@@ -106,9 +105,8 @@ export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> 
                         Object.values(actionControllersMap).forEach(control => control.abort());
                     }
                 });
-
                 //clearTimer
-                clearInterval(this.timer);
+                clearInterval(timer);
 
                 app.logger.info({
                     action: `${moduleName}/@@DESTROY`,
@@ -219,7 +217,7 @@ export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> 
                     state => state.state,
                     (idleState, preIdleState) => {
                         if (preIdleState !== idleState) {
-                            clearInterval(this.timer);
+                            clearInterval(timer);
                             const isActive = idleState === "active";
                             if (isActive) {
                                 this.onTickTask();
@@ -242,8 +240,8 @@ export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> 
                     this.tickCount++;
                 };
                 tickExecute();
-                clearInterval(this.timer);
-                this.timer = setInterval(tickExecute, tickIntervalInMillisecond);
+                clearInterval(timer);
+                timer = setInterval(tickExecute, tickIntervalInMillisecond);
             }
         };
     }
