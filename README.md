@@ -55,7 +55,7 @@ In v2, we made some changes, removing redux, redux-saga, generate syntax, etc. a
 
 In the Module, since we ditched redux-saga, we can use normal async, await syntax to handle business scenarios. Of course, removing saga would make it impossible for us to support some of its conveniences, such as automatically canceling an executing action when a route switch/module destroy occurs. For this reason, we provide the Module.executeAsync method to handle this scenario, see add/executeAsync for details.
 
-###### before
+##### before
 
 ```
 class MainModule extends Module<RootState, "main"> {
@@ -71,7 +71,7 @@ class MainModule extends Module<RootState, "main"> {
 }
 ```
 
-###### after
+##### after
 
 ```
 class MainModule extends Module<RootState, "main"> {
@@ -89,7 +89,7 @@ class MainModule extends Module<RootState, "main"> {
 
 And when using an action, you can call the function on the action directly without using a hook or dispatch.
 
-###### before
+##### before
 
 ```
 import {actions} from "..";
@@ -104,7 +104,7 @@ function Example() {
 }
 ```
 
-###### after
+##### after
 
 ```
 import {actions} from "..";
