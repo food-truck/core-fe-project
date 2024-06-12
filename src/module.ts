@@ -1,6 +1,6 @@
-import { ModuleProxy } from "./platform/ModuleProxy";
-import { captureError } from "./util/error-util";
-import { Exception, coreRegister, executeActionGenerator } from "@wonder/core-core";
+import {ModuleProxy} from "./platform/ModuleProxy";
+import {captureError} from "./util/error-util";
+import {Exception, coreRegister, executeActionGenerator} from "@wonder/core-core";
 
 export interface TickIntervalDecoratorFlag {
     tickInterval?: number;

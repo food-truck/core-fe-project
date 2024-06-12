@@ -30,6 +30,6 @@ export function Subscribe<S extends object, T, M extends Module<any, any>, K ext
         Reflect.defineProperty(newFunction, "name", {
             value: _context.name,
         });
-        return newFunction
+        return newFunction;
     };
 }
