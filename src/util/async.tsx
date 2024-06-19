@@ -63,7 +63,7 @@ export function async<T, K extends ReactComponentKeyOf<T>>(resolve: () => Promis
             try {
                 this.setState({error: null});
                 setLoadingState({
-                    show: true,
+                    show: 1,
                     identifier: loadingIdentifier || "global",
                 });
                 await loadChunk();
@@ -72,7 +72,7 @@ export function async<T, K extends ReactComponentKeyOf<T>>(resolve: () => Promis
                 this.setState({error: e});
             } finally {
                 setLoadingState({
-                    show: false,
+                    show: -1,
                     identifier: loadingIdentifier || "global",
                 });
                 app.logger.info({

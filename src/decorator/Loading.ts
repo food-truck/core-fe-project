@@ -7,21 +7,21 @@ export function Loading<ReturnType>(identifier: string = "global", initialLoadin
     if (initialLoading) {
         setLoadingState({
             identifier,
-            show: initialLoading,
+            show: 1,
         });
     }
 
     return createActionHandlerDecorator(async function (handler: ActionHandlerWithMetaData<ReturnType>) {
         setLoadingState({
             identifier,
-            show: true,
+            show: 1,
         });
         try {
             return await handler();
         } finally {
             setLoadingState({
                 identifier,
-                show: false,
+                show: initialLoading ? -2 : -1,
             });
         }
     });

@@ -7,6 +7,7 @@ lib/
 .DS_Store
 .vscode
 *.tsbuildinfo
+coverage
 
 .npmrc
 .eslintcache

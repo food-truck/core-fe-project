@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import {defineConfig} from "vite";
 import react from "@vitejs/plugin-react";
 import StyleLintPlugin from "vite-plugin-stylelint";
@@ -28,6 +29,16 @@ const paths = srcModules.reduce((prev, next) => {
 }, {});
 
 export default defineConfig({
+    test: {
+        environment: "jsdom",
+        coverage: {
+            provider: "v8",
+            reporter: ['text', 'html'], 
+            include: [
+                "src/",
+            ]
+        }
+    },
     plugins: [
         react({
             babel: {

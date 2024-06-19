@@ -31,7 +31,6 @@ interface VersionCheckConfig {
 interface BrowserConfig {
     onOldBrowserDetected?: () => void;
     onLocationChange?: (location: Location) => void;
-    navigationPreventionMessage?: string;
 }
 
 interface BootstrapOption {
@@ -56,7 +55,7 @@ export function bootstrap(option: BootstrapOption): void {
     setIdleTimeout(option.idleTimeoutInSecond ?? DEFAULT_IDLE_TIMEOUT);
     runBackgroundLoop(option.loggerConfig, option.versionConfig);
     createZustandContext();
-    renderRoot(option.componentType, option.rootContainer || injectRootContainer(), option.browserConfig?.navigationPreventionMessage || "Are you sure to leave current page?");
+    renderRoot(option.componentType, option.rootContainer || injectRootContainer());
 }
 
 function detectOldBrowser(onOldBrowserDetected?: () => void) {
@@ -126,7 +125,7 @@ function setupGlobalErrorHandler(errorListener: ErrorListener) {
     );
 }
 
-function renderRoot(EntryComponent: React.ComponentType, rootContainer: HTMLElement, navigationPreventionMessage: string) {
+function renderRoot(EntryComponent: React.ComponentType, rootContainer: HTMLElement) {
     const root = createRoot(rootContainer);
 
     root.render(
