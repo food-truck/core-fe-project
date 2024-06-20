@@ -234,23 +234,67 @@ override render() {
 - after
 
 Add new api `Routes`, `cloneRoute`. `<Route />` need wrap with `cloneRoute` function. Than `component` => `Component`.
+
+#### Important change is [`<Outlet />`](https://reactrouter.com/en/main/components/outlet#outlet), if you project have global layout, you need to use `<Outlet />` in `"/"` route.
+
 ```
 import {Routes, Route, cloneRoute} from "@wonder/core-fe";
+import {Navigate, Outlet, useNavigate} from "react-router";
 
-override render() {
+
+const renderRoute = (route: FTIRoute, parentPath?: any): JSX.Element[] => {
+    if (route?.hidden) return [];
+    let routes = [];
+    const path = pathName(route, parentPath);
+    if (route.Component) {
+        if (route.role) {
+            const clone = cloneRoute(<Route key={path} path={path} Component={route.Component} />);
+            routes.push(clone);
+        } else {
+            return [];
+        }
+    } else if (route.children && route.children.length > 0 && route.children[0].Component) {
+        const clone = cloneRoute(<Route key={path} path={path} Component={route.children[0].Component} />);
+        routes.push(clone);
+    }
+    if (route.children) {
+        for (const child of route.children) {
+            routes = routes.concat(renderRoute(child, path));
+        }
+    }
+    return routes;
+};
+
+const MainLayout = () => {
+    const pathname = app.store.router(state => state.location.pathname);
+    const pageName = pathname === "/Test" ? "Template" : "Test";pageNamepathname
+    const navigate = useNavigate();
+
+    return (
+        <div>
+            <button onClick={() => navigate(`/${pageName}`)}>Go {pageName} Page</button>
+            <Outlet />
+        </div>
+    );
+};
+
+
+export default () => {
     return (
         <Routes>
-            {cloneRoute(<Route caseSensitive key="/" path="/" Component={() => <Navigate to="/Template" />} />)}
-
-            {FTIRoutes.map(route => this.renderRoute(route))}
+            <Route key="/" path="/" element={<MainLayout />}>
+                {cloneRoute(<Route caseSensitive key="/" path="/" Component={() => <Navigate to="/Template" />} />)}
+                {FTIRoutes.map(route => renderRoute(route))}
+            </Route>
         </Routes>
     );
-}
+};
+
 ```
 
 - removed
 
-In before, because `connected-react-router` dependency, we can lister router change event outsite of `<Router />` component. But `connected-react-router` not support `v6`, so we remove navigationStore state, than remove `navigationPrevented` api. If you need to prevent navigation, you can use `useBlocker` hook. This is [docs](https://reactrouter.com/en/main/hooks/use-blocker) and [example](;;;;;;https://stackblitz.com/github/remix-run/react-router/tree/main/examples/navigation-blocking?file=src%2Fapp.tsx). It is very easy to use!
+In before, because `connected-react-router` dependency, we can lister router change event outsite of `<Router />` component. But `connected-react-router` not support `v6`, so we remove navigationStore state, than remove `navigationPrevented` api. If you need to prevent navigation, you can use `useBlocker` hook. This is [docs](https://reactrouter.com/en/main/hooks/use-blocker) and [example](;;;;;;;;;;https://stackblitz.com/github/remix-run/react-router/tree/main/examples/navigation-blocking?file=src%2Fapp.tsx). It is very easy to use!
 
 like this:
 ```
