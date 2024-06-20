@@ -1,14 +1,14 @@
 import "./index.css";
 import React from "react";
-import { Routes, Route, cloneRoute } from "../../../src";
-import { Navigate } from "react-router";
-import { RootState } from "../../type/state";
-import { FTIRoutes } from "../../route";
-import { FTIRoute } from "../../route/type";
-import { State as MainState } from "./type";
-import { app } from "../../../src/app";
+import {Routes, Route, cloneRoute} from "../../../src";
+import {Navigate, Outlet, useNavigate} from "react-router";
+import {RootState} from "../../type/state";
+import {FTIRoutes} from "../../route";
+import {FTIRoute} from "../../route/type";
+import {State as MainState} from "./type";
+import {app} from "../../../src/app";
 
-interface Props extends Pick<MainState, "loading"> { }
+interface Props extends Pick<MainState, "loading"> {}
 
 const pathName = (route: FTIRoute, parentPath: string | undefined) => {
     if (route.path.startsWith("/")) {
@@ -22,12 +22,22 @@ const pathName = (route: FTIRoute, parentPath: string | undefined) => {
     } else {
         return "/" + route.path;
     }
-}
+};
+
+const MainLayout = () => {
+    const pathname = app.store.router(state => state.location.pathname);
+    const pageName = pathname === "/Test" ? "Template" : "Test";
+    const navigate = useNavigate();
+
+    return (
+        <div>
+            <button onClick={() => navigate(`/${pageName}`)}>Go {pageName} Page</button>
+            <Outlet />
+        </div>
+    );
+};
 
 export default () => {
-    const pathname = app.store.router(state => state.location.pathname)
-    const pageName = pathname === "/Test" ? "Template" : "Test"
-
     const renderRoute = (route: FTIRoute, parentPath?: any): JSX.Element[] => {
         if (route?.hidden) return [];
         let routes = [];
@@ -49,16 +59,14 @@ export default () => {
             }
         }
         return routes;
-    }
+    };
 
     return (
-        <div>
-            <button onClick={() => app.navigate(`/${pageName}`)}>Go {pageName} Page</button>
-
-            <Routes>
+        <Routes>
+            <Route key="/" path="/" element={<MainLayout />}>
                 {cloneRoute(<Route caseSensitive key="/" path="/" Component={() => <Navigate to="/Template" />} />)}
                 {FTIRoutes.map(route => renderRoute(route))}
-            </Routes>
-        </div>
-    )
-}
+            </Route>
+        </Routes>
+    );
+};
