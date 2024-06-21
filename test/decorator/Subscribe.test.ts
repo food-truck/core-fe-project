@@ -1,6 +1,6 @@
 import {describe, test, expect} from "vitest";
 import {waitFor} from "@testing-library/dom";
-import {Subscribe, Module, State, app, delay, register} from "../../src";
+import {Subscribe, Module, State, app, register} from "../../src";
 
 describe("Subscribe decorator", () => {
     class Person extends Module<State, "person"> {
@@ -23,20 +23,28 @@ describe("Subscribe decorator", () => {
     const page = register(new Person("person", {count: 0, countClone: 0, countClonePrev: 0}));
     const actions = page.getActions();
 
-    test("Subscribe app store data change.", () => {
+    test("Subscribe app store data change.", async () => {
         actions.increase();
-        expect(app.getState("app").person.countClone).toBe(1);
-        expect(app.getState("app").person.countClonePrev).toBe(0);
+
+        await waitFor(() => {
+            expect(app.getState("app").person.countClone).toBe(1);
+            expect(app.getState("app").person.countClonePrev).toBe(0);
+        })
 
         actions.increase();
-        expect(app.getState("app").person.countClone).toBe(2);
-        expect(app.getState("app").person.countClonePrev).toBe(1);
+        await waitFor(() => {
+            expect(app.getState("app").person.countClone).toBe(2);
+            expect(app.getState("app").person.countClonePrev).toBe(1);
+        })
+
     });
 
-    test("Subscribe can be uninstalled.", () => {
+    test("Subscribe can be uninstalled.",async () => {
         actions.listenCountChange();
         actions.increase();
-        expect(app.getState("app").person.countClone).toBe(2);
-        expect(app.getState("app").person.countClonePrev).toBe(1);
+        await waitFor(() => {
+            expect(app.getState("app").person.countClone).toBe(2);
+            expect(app.getState("app").person.countClonePrev).toBe(1);
+        })
     });
 });

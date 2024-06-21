@@ -21,8 +21,8 @@ dependencies:
     specifier: 5.3.3
     version: 5.3.3
   '@wonder/core-core':
-    specifier: 0.1.12
-    version: 0.1.12(immer@10.1.1)(react@18.2.0)(zustand@4.5.2)
+    specifier: 0.1.13
+    version: 0.1.13(immer@10.1.1)(react@18.2.0)(zustand@4.5.2)
   axios:
     specifier: 1.6.1
     version: 1.6.1
@@ -1360,8 +1360,8 @@ packages:
       pretty-format: 29.7.0
     dev: true
 
-  /@wonder/core-core@0.1.12(immer@10.1.1)(react@18.2.0)(zustand@4.5.2):
-    resolution: {integrity: sha1-+mLRadloCPcDc+GtpfNnY0OTs4M=}
+  /@wonder/core-core@0.1.13(immer@10.1.1)(react@18.2.0)(zustand@4.5.2):
+    resolution: {integrity: sha1-2HpThAqQ1roK4aDhQtez5ZlnqU0=}
     engines: {node: '>=14'}
     peerDependencies:
       immer: ^10.1.1
