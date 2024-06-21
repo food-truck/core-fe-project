@@ -29,22 +29,21 @@ describe("Subscribe decorator", () => {
         await waitFor(() => {
             expect(app.getState("app").person.countClone).toBe(1);
             expect(app.getState("app").person.countClonePrev).toBe(0);
-        })
+        });
 
         actions.increase();
         await waitFor(() => {
             expect(app.getState("app").person.countClone).toBe(2);
             expect(app.getState("app").person.countClonePrev).toBe(1);
-        })
-
+        });
     });
 
-    test("Subscribe can be uninstalled.",async () => {
+    test("Subscribe can be uninstalled.", async () => {
         actions.listenCountChange();
         actions.increase();
         await waitFor(() => {
             expect(app.getState("app").person.countClone).toBe(2);
             expect(app.getState("app").person.countClonePrev).toBe(1);
-        })
+        });
     });
 });
