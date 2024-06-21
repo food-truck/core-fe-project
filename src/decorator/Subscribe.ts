@@ -2,6 +2,7 @@ import {app} from "../app";
 import type {Module} from "../platform/Module";
 import {shallow} from "zustand/shallow";
 import type {StoreType, store} from "../sliceStores";
+import {ON_REGISTER_EVENT, eventBus} from "@wonder/core-core";
 
 /**
  * Subscribe decorator for subscribing to changes in the application state. When the decorated method is called, the subscription is unsubscribed.
@@ -10,17 +11,23 @@ import type {StoreType, store} from "../sliceStores";
  * @param selector selector: state => state.app.xxx  or state => [state.app.xxx, state.app.yyy]
  *
  */
-export function Subscribe<S extends object, T, M extends Module<any, any>, K extends keyof typeof store>(selector: (state: S) => any, storeName: K = "app" as K) {
+export function Subscribe<S extends object, T, M extends Module<any, any>, K extends keyof typeof store>(
+    selector: (state: S) => any,
+    storeName: K = "app" as K,
+    equalityFn?: (a: any, b: any) => boolean
+) {
     let unsubscribe: () => void;
     return (originMethod: any, _context: ClassMethodDecoratorContext<M, (value: T, prevValue: T) => void>) => {
         _context.addInitializer(function () {
-            unsubscribe = (app.store[storeName] as StoreType).subscribe(
-                selector as (state: object) => any,
-                (value, prevValue) => {
-                    originMethod.call(this, value, prevValue);
-                },
-                {equalityFn: shallow}
-            );
+            eventBus.once(ON_REGISTER_EVENT, () => {
+                unsubscribe = (app.store[storeName] as StoreType).subscribe(
+                    selector as (state: object) => any,
+                    (value, prevValue) => {
+                        originMethod.call(this, value, prevValue);
+                    },
+                    {equalityFn: equalityFn ?? shallow}
+                );
+            });
         });
 
         const newFunction = () => {

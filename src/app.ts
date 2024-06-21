@@ -1,4 +1,4 @@
-import {type Logger, type LoggerConfig, LoggerImpl, coreApp} from "@wonder/core-core";
+import {type Logger, type LoggerConfig, LoggerImpl, coreApp, ON_REGISTER_EVENT} from "@wonder/core-core";
 import {store, type State} from "./sliceStores";
 import type {ErrorHandler} from "./module";
 import type {To, NavigateOptions} from "react-router-dom";

@@ -77,7 +77,6 @@ export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> 
                 if (currentLocation && currentRouteParams && !this.areLocationsEqual(currentLocation, prevLocation) && this.hasOwnLifecycle("onLocationMatched")) {
                     const action = `${moduleName}/@@LOCATION_MATCHED`;
                     const startTime = Date.now();
-                    console.info(app.actionControllers);
                     executeAction({
                         actionName: action,
                         handler: lifecycleListener.onLocationMatched.bind(lifecycleListener),
