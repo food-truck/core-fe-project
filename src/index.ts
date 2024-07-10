@@ -15,6 +15,7 @@ export {
     errorToException,
     createActionHandlerDecorator,
     type ActionHandlerWithMetaData,
+    eventBus,
 } from "@wonder/core-core";
 export * as immer from "immer";
 export {bootstrap} from "./platform/bootstrap";
@@ -36,6 +37,8 @@ export {Mutex} from "./decorator/Mutex";
 export {RetryOnNetworkConnectionError} from "./decorator/RetryOnNetworkConnectionError";
 export {SilentOnNetworkConnectionError} from "./decorator/SilentOnNetworkConnectionError";
 export {Subscribe} from "./decorator/Subscribe";
+export {EmitEventAfter, EmitEventBefore, EmitEventOnError} from "./decorator/EmitEvent";
+export {ListenEvent} from "./decorator/ListenEvent";
 export {app} from "./app";
 
 export * from "./storeActions";

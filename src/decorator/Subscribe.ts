@@ -17,7 +17,7 @@ export function Subscribe<S extends object, T, M extends Module<any, any>, K ext
     equalityFn?: (a: any, b: any) => boolean
 ) {
     let unsubscribe: () => void;
-    return (originMethod: any, _context: ClassMethodDecoratorContext<M, (value: T, prevValue: T) => void>) => {
+    return (originMethod: any, _context: ClassMethodDecoratorContext<M, (value: T, prevValue: T) => Promise<void>>) => {
         _context.addInitializer(function () {
             eventBus.once(ON_REGISTER_EVENT, () => {
                 unsubscribe = (app.store[storeName] as StoreType).subscribe(
@@ -37,6 +37,6 @@ export function Subscribe<S extends object, T, M extends Module<any, any>, K ext
         Reflect.defineProperty(newFunction, "name", {
             value: _context.name,
         });
-        return newFunction;
+        return newFunction as any;
     };
 }
