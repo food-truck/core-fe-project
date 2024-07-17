@@ -311,3 +311,23 @@ useEffect(() => {
     }
 }, [blocker, navigationPrevented])
 ```
+
+## Frequently Asked Questions:
+1. Pay attention to the decorator version upgrade support for vite/webpack. Since core-v2 now uniformly uses the new version of decorators, if your project configuration does not support it, decorators may throw errors. Below is the recommended configuration:
+   
+   For vite:
+   ```javascript
+   export default defineConfig({
+       plugins: [
+           react({
+               babel: {
+                   plugins: [["@babel/plugin-proposal-decorators", {loose: true, version: "2022-03"}]],
+               },
+           }),
+       ],
+   });
+   ```
+   For webpack:
+   ```javascript
+   "esbuild-loader": "4.2.0",
+   ```

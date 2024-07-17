@@ -21,7 +21,7 @@ class OperationModule extends Module<RootState, "Operation"> {
         this.listenList();
     }
     @Subscribe((state: RootState["app"]) => state.Template.list)
-    private listenList(value?: RootState["app"]["Template"]["list"], prevValue?: RootState["app"]["Template"]["list"]) {
+    private async listenList(value?: RootState["app"]["Template"]["list"], prevValue?: RootState["app"]["Template"]["list"]) {
         console.info(`new List ${value} & old List ${prevValue}`)
     }
 }

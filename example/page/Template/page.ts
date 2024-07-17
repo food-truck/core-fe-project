@@ -38,6 +38,7 @@ class TemplateModule extends Module<RootState, "Template"> {
 
     cancelGetTodoList() {
         this.abortControllerMap["getTodoList"]?.abort();
+        //  or app.actionControllers[this.name]["getTodoList"]?.abort();
     }
 
     setList(list: string[]) {
