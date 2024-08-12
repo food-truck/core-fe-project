@@ -1,73 +1,19 @@
-import {app} from "./app";
-import createPromiseMiddleware from "./createPromiseMiddleware";
-import {Exception} from "./Exception";
-import {Module, type ModuleLifecycleListener} from "./platform/Module";
 import {ModuleProxy} from "./platform/ModuleProxy";
-import {setStateAction, type Action} from "./reducer";
-import {type SagaGenerator} from "./typed-saga";
 import {captureError} from "./util/error-util";
-import {stringifyWithMask} from "./util/json-util";
+import {Exception, coreRegister, executeActionGenerator} from "@wonder/core-core";
 
 export interface TickIntervalDecoratorFlag {
     tickInterval?: number;
 }
 
-export type ActionHandler = (...args: any[]) => SagaGenerator;
-
-export type ErrorHandler = (error: Exception) => SagaGenerator;
+export type ErrorHandler = (error: Exception) => void;
 
 export interface ErrorListener {
     onError: ErrorHandler;
 }
 
-type ActionCreator<H> = H extends (...args: infer P) => SagaGenerator ? (...args: P) => Action<P> : never;
-type HandlerKeys<H> = {[K in keyof H]: H[K] extends (...args: any[]) => SagaGenerator ? K : never}[Exclude<keyof H, keyof ModuleLifecycleListener | keyof ErrorListener>];
-export type ActionCreators<H> = {readonly [K in HandlerKeys<H>]: ActionCreator<H[K]>};
+export type ActionHandler<ReturnType> = (...args: any[]) => Promise<ReturnType>;
 
-export function register<M extends Module<any, any>>(module: M): ModuleProxy<M> {
-    const moduleName: string = module.name;
-    if (!app.store.getState().app[moduleName]) {
-        // To get private property
-        app.store.dispatch(setStateAction(moduleName, module.initialState, `@@${moduleName}/@@init`));
-    }
+export const executeAction = executeActionGenerator(captureError);
 
-    // Transform every method into ActionCreator
-    const actions: any = {};
-    getMethods(module).forEach(({name: actionType, method}) => {
-        // Attach action name, for @Log / error handler reflection
-        const qualifiedActionType = `${moduleName}/${actionType}`;
-        method.actionName = qualifiedActionType;
-        actions[actionType] = (...payload: any[]): Action<any[]> => ({type: qualifiedActionType, payload});
-
-        app.actionHandlers[qualifiedActionType] = {
-            handler: method.bind(module),
-            moduleName,
-        };
-    });
-
-    return new ModuleProxy(module, actions, moduleName);
-}
-
-export function* executeAction(actionName: string, handler: ActionHandler, ...payload: any[]): SagaGenerator {
-    const {resolve, reject} = createPromiseMiddleware();
-    try {
-        const ret = yield* handler(...payload);
-        resolve(app.actionMap, actionName, ret);
-    } catch (error) {
-        const actionPayload = stringifyWithMask(app.loggerConfig?.maskedKeywords || [], "***", ...payload) || "[No Parameter]";
-        captureError(error, actionName, {actionPayload});
-        reject(app.actionMap, actionName, error);
-    }
-}
-
-function getMethods<M extends Module<any, any>>(module: M): Array<{name: string; method: any}> {
-    // Do not use Object.keys(Object.getPrototypeOf(module)), because class methods are not enumerable
-    const keys: Array<{name: string; method: any}> = [];
-    for (const propertyName of Object.getOwnPropertyNames(Object.getPrototypeOf(module))) {
-        const method = Reflect.get(module, propertyName);
-        if (method instanceof Function && propertyName !== "constructor") {
-            keys.push({name: propertyName, method});
-        }
-    }
-    return keys;
-}
+export const register = coreRegister(ModuleProxy<any>, executeAction);

@@ -1,17 +1,13 @@
-import {app} from "../app";
-import createPromiseMiddleware from "../createPromiseMiddleware";
-import {createActionHandlerDecorator} from "./createActionHandlerDecorator";
+import {createActionHandlerDecorator, type ActionHandlerWithMetaData} from "@wonder/core-core";
 
 /**
  * To add a log item for action, with execution duration, action name, and masked action parameters.
  */
-export function Log() {
-    return createActionHandlerDecorator(function* (handler, thisModule) {
+export function Log<ReturnType>() {
+    return createActionHandlerDecorator(async function (handler: ActionHandlerWithMetaData<ReturnType>, thisModule) {
         const startTime = Date.now();
-        const {resolve} = createPromiseMiddleware();
         try {
-            const ret = yield* handler();
-            resolve(app.actionMap, handler.actionName, ret);
+            return await handler();
         } finally {
             thisModule.logger.info({
                 action: handler.actionName,

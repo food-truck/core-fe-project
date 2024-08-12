@@ -1,28 +1,23 @@
 import React from "react";
 import {createRoot} from "react-dom/client";
-import {Provider} from "react-redux";
-import {Router} from "react-router-dom";
 import axios from "axios";
-import {NavigationGuard} from "./NavigationGuard";
 import {app} from "../app";
-import {executeAction, type ErrorListener} from "../module";
-import {idleTimeoutActions} from "../reducer";
-import {APIException} from "../Exception";
-import {call, delay, type SagaGenerator} from "../typed-saga";
+import {type ErrorListener, executeAction} from "../module";
 import {ErrorBoundary} from "../util/ErrorBoundary";
 import {ajax} from "../util/network";
 import {isBrowserSupported, isIOS} from "../util/navigator-util";
-import {captureError, errorToException} from "../util/error-util";
+import {captureError} from "../util/error-util";
 import {DEFAULT_IDLE_TIMEOUT, IdleDetector} from "../util/IdleDetector";
-import type {Location} from "history";
-import type {LoggerConfig} from "../Logger";
+import {setIdleTimeout} from "../storeActions";
+import {Provider, createZustandContext} from "../ZustandProvider";
+import {errorToException, type LoggerConfig, delay, APIException} from "@wonder/core-core";
 
 /**
  * Configuration for frontend version check.
  * If the `versionCheckURL` API response changes, `onRemind` will be executed.
  */
 interface VersionCheckConfig {
-    onRemind: () => SagaGenerator;
+    onRemind: () => void;
     versionCheckURL: string; // Must be GET Method, returning whatever JSON
     frequencyInSecond?: number; // Default: 600 (10 min)
 }
@@ -36,7 +31,6 @@ interface VersionCheckConfig {
 interface BrowserConfig {
     onOldBrowserDetected?: () => void;
     onLocationChange?: (location: Location) => void;
-    navigationPreventionMessage?: string;
 }
 
 interface BootstrapOption {
@@ -58,10 +52,10 @@ export function bootstrap(option: BootstrapOption): void {
     detectOldBrowser(option.browserConfig?.onOldBrowserDetected);
     setupGlobalErrorHandler(option.errorListener);
     setupAppExitListener(option.loggerConfig?.serverURL);
-    setupLocationChangeListener(option.browserConfig?.onLocationChange);
-    setupIdleTimeout(option.idleTimeoutInSecond ?? DEFAULT_IDLE_TIMEOUT);
+    setIdleTimeout(option.idleTimeoutInSecond ?? DEFAULT_IDLE_TIMEOUT);
     runBackgroundLoop(option.loggerConfig, option.versionConfig);
-    renderRoot(option.componentType, option.rootContainer || injectRootContainer(), option.browserConfig?.navigationPreventionMessage || "Are you sure to leave current page?");
+    createZustandContext();
+    renderRoot(option.componentType, option.rootContainer || injectRootContainer());
 }
 
 function detectOldBrowser(onOldBrowserDetected?: () => void) {
@@ -78,7 +72,6 @@ function detectOldBrowser(onOldBrowserDetected?: () => void) {
             }
             alert(alertMessage);
         }
-        // After that, the following code may still run
     }
 }
 
@@ -132,17 +125,15 @@ function setupGlobalErrorHandler(errorListener: ErrorListener) {
     );
 }
 
-function renderRoot(EntryComponent: React.ComponentType, rootContainer: HTMLElement, navigationPreventionMessage: string) {
+function renderRoot(EntryComponent: React.ComponentType, rootContainer: HTMLElement) {
     const root = createRoot(rootContainer);
+
     root.render(
         <Provider store={app.store}>
             <IdleDetector>
-                <Router history={app.history}>
-                    <NavigationGuard message={navigationPreventionMessage} />
-                    <ErrorBoundary>
-                        <EntryComponent />
-                    </ErrorBoundary>
-                </Router>
+                <ErrorBoundary>
+                    <EntryComponent />
+                </ErrorBoundary>
             </IdleDetector>
         </Provider>
     );
@@ -179,44 +170,45 @@ function setupAppExitListener(eventServerURL?: string) {
     }
 }
 
-function setupLocationChangeListener(listener?: (location: Location) => void) {
-    if (listener) {
-        app.history.listen(listener);
-    }
-}
-
-function setupIdleTimeout(timeout: number) {
-    app.store.dispatch(idleTimeoutActions(timeout));
-}
-
 function runBackgroundLoop(loggerConfig?: LoggerConfig, versionCheckConfig?: VersionCheckConfig) {
     app.logger.info({action: "@@ENTER"});
     app.loggerConfig = loggerConfig || null;
 
     if (loggerConfig) {
-        app.sagaMiddleware.run(function* () {
-            while (true) {
-                yield delay((loggerConfig.frequencyInSecond || 20) * 1000);
-                yield* call(sendEventLogs);
-            }
-        });
+        runSendEventLogs();
     }
 
     if (versionCheckConfig) {
-        app.sagaMiddleware.run(function* () {
-            let lastChecksum: string | null = null;
+        runVersionCheck(versionCheckConfig);
+    }
 
-            while (true) {
-                const newChecksum = yield* call(fetchVersionChecksum, versionCheckConfig.versionCheckURL);
-                if (newChecksum) {
-                    if (lastChecksum !== null && newChecksum !== lastChecksum) {
-                        yield* executeAction(VERSION_CHECK_ACTION, versionCheckConfig.onRemind);
-                    }
+    function runSendEventLogs() {
+        async function loop() {
+            await sendEventLogs();
+            await delay((loggerConfig?.frequencyInSecond || 20) * 1000);
+            requestAnimationFrame(loop);
+        }
+        loop();
+    }
+
+    function runVersionCheck(versionCheckConfig: VersionCheckConfig) {
+        let lastChecksum: string | null = null;
+        async function checkLoop() {
+            const newChecksum = await fetchVersionChecksum(versionCheckConfig.versionCheckURL);
+            if (newChecksum) {
+                if (lastChecksum !== null && newChecksum !== lastChecksum) {
+                    await executeAction({
+                        actionName: VERSION_CHECK_ACTION,
+                        handler: versionCheckConfig.onRemind,
+                        payload: [],
+                    });
                     lastChecksum = newChecksum;
                 }
-                yield delay((versionCheckConfig.frequencyInSecond || 600) * 1000);
             }
-        });
+            await delay((versionCheckConfig.frequencyInSecond || 600) * 1000);
+            requestAnimationFrame(checkLoop);
+        }
+        checkLoop();
     }
 }
 

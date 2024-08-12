@@ -1,37 +1,14 @@
-import {Exception, JavaScriptException} from "../Exception";
 import {app} from "../app";
 import {isBrowserSupported} from "./navigator-util";
-import {spawn} from "../typed-saga";
 import {GLOBAL_ERROR_ACTION, GLOBAL_PROMISE_REJECTION_ACTION, sendEventLogs} from "../platform/bootstrap";
 import type {ErrorHandler} from "../module";
+import {errorToException, Exception, JavaScriptException} from "@wonder/core-core";
 
 let errorHandlerRunning = false;
 
 interface ErrorExtra {
     actionPayload?: string; // masked
     extraStacktrace?: string;
-}
-
-export function errorToException(error: unknown): Exception {
-    if (error instanceof Exception) {
-        return error;
-    } else {
-        let message: string;
-        if (!error) {
-            message = "[No Message]";
-        } else if (typeof error === "string") {
-            message = error;
-        } else if (error instanceof Error) {
-            message = error.message;
-        } else {
-            try {
-                message = JSON.stringify(error);
-            } catch (e) {
-                message = "[Unknown]";
-            }
-        }
-        return new JavaScriptException(message, error);
-    }
 }
 
 export function captureError(error: unknown, action: string, extra: ErrorExtra = {}): Exception {
@@ -58,20 +35,20 @@ export function captureError(error: unknown, action: string, extra: ErrorExtra =
         });
     } else {
         app.logger.exception(exception, info, action);
-        app.sagaMiddleware.run(runUserErrorHandler, app.errorHandler, exception);
+        runUserErrorHandler.call(null, app.errorHandler, exception);
     }
 
     return exception;
 }
 
-export function* runUserErrorHandler(handler: ErrorHandler, exception: Exception) {
+export async function runUserErrorHandler(handler: ErrorHandler, exception: Exception) {
     // For app, report errors to event server ASAP, in case of sudden termination
-    yield spawn(sendEventLogs);
+    sendEventLogs();
     if (errorHandlerRunning) return;
 
     try {
         errorHandlerRunning = true;
-        yield* handler(exception);
+        handler(exception);
     } catch (e) {
         console.warn("[framework] Fail to execute error handler", e);
     } finally {

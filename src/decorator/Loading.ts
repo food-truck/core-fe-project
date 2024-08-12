@@ -1,21 +1,28 @@
-import {createActionHandlerDecorator} from "./createActionHandlerDecorator";
-import {put} from "redux-saga/effects";
-import {loadingAction} from "../reducer";
-import createPromiseMiddleware from "../createPromiseMiddleware";
-import {app} from "../app";
+import {setLoadingState, createActionHandlerDecorator, type ActionHandlerWithMetaData} from "@wonder/core-core";
 
 /**
  * To mark state.loading[identifier] during action execution.
  */
-export function Loading(identifier: string = "global") {
-    return createActionHandlerDecorator(function* (handler) {
-        const {resolve} = createPromiseMiddleware();
+export function Loading<ReturnType>(identifier: string = "global", initialLoading?: boolean) {
+    if (initialLoading) {
+        setLoadingState({
+            identifier,
+            show: 1,
+        });
+    }
+
+    return createActionHandlerDecorator(async function (handler: ActionHandlerWithMetaData<ReturnType>) {
+        setLoadingState({
+            identifier,
+            show: 1,
+        });
         try {
-            yield put(loadingAction(true, identifier));
-            const ret = yield* handler();
-            resolve(app.actionMap, handler.actionName, ret);
+            return await handler();
         } finally {
-            yield put(loadingAction(false, identifier));
+            setLoadingState({
+                identifier,
+                show: initialLoading ? -2 : -1,
+            });
         }
     });
 }
