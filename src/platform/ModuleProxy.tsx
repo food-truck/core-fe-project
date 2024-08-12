@@ -4,8 +4,9 @@ import {executeAction} from "../module";
 import {Module, type ModuleLifecycleListener} from "./Module";
 import type {Location} from "history";
 import {useMatch} from "react-router-dom";
-import {CoreModuleProxy} from "@wonder/core-core";
+import {CoreModuleProxy, eventBus} from "@wonder/core-core";
 import type {RouterState} from "../sliceStores";
+import {getListenActionName} from "../decorator/Subscribe";
 
 type RouteComponentProps = RouterState & {match: ReturnType<typeof useMatch>};
 let startupModuleName: string | null = null;
@@ -13,10 +14,12 @@ let startupModuleName: string | null = null;
 export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> {
     attachLifecycle<P extends object>(ComponentType: React.ComponentType<P>): React.ComponentType<P> {
         const moduleName = this.module.name as string;
+        const thisModule = this.module;
         const lifecycleListener = this.module as ModuleLifecycleListener;
         const modulePrototype = Object.getPrototypeOf(lifecycleListener);
         const actions = this.actions as any;
         let timer: NodeJS.Timeout;
+        const listenActionName = getListenActionName(moduleName);
 
         return class extends React.PureComponent<P> {
             static displayName = `Module[${moduleName}]`;
@@ -29,8 +32,13 @@ export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> 
                     startupModuleName = moduleName;
                 }
             }
-
             override componentDidMount() {
+                thisModule.moduleStatus = "active";
+                eventBus.emit(listenActionName, {
+                    detail: {
+                        moduleName,
+                    },
+                });
                 this.lifecycle.call(this);
             }
 
@@ -95,6 +103,7 @@ export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> 
             }
 
             override componentWillUnmount() {
+                thisModule.moduleStatus = "inactive";
                 if (this.hasOwnLifecycle("onDestroy")) {
                     actions.onDestroy();
                 }

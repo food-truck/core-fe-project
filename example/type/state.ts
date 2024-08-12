@@ -8,5 +8,6 @@ export interface RootState extends State {
         main: MainState;
         Template: TemplateState;
         Operation: OperationState
+        Test: any;
     };
 }
