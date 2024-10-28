@@ -157,7 +157,12 @@ export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> 
                     action: enterActionName,
                     elapsedTime: Date.now() - startTime,
                     info: {
-                        component_props: JSON.stringify(props),
+                        component_props: JSON.stringify(props, (_, value) => {
+                            if (React.isValidElement(value)) {
+                                return undefined;
+                            }
+                            return value;
+                        }),
                     },
                 });
 

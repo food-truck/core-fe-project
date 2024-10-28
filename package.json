@@ -1,6 +1,6 @@
 {
     "name": "@wonder/core-fe",
-    "version": "2.0.0-alpha.7",
+    "version": "2.0.0-alpha.8",
     "main": "lib/index.js",
     "module": "lib/index.js",
     "types": "lib/index.d.ts",
@@ -55,7 +55,7 @@
         "@types/history": "4.7.11",
         "@types/react-router": "5.1.20",
         "@types/react-router-dom": "5.3.3",
-        "@wonder/core-core": "0.1.16",
+        "@wonder/core-core": "0.1.18",
         "axios": "1.6.1",
         "core-js": "3.33.0",
         "history": "4.10.1",
