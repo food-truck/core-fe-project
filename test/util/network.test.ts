@@ -1,3 +1,4 @@
+import {expect, test} from "vitest";
 import {urlParams, uri} from "../../src/util/network";
 
 test("urlParams", () => {

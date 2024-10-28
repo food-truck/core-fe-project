@@ -1,6 +1,5 @@
-import {useSelector} from "react-redux";
-import type {State} from "../reducer";
+import {app} from "../app";
 
 export function useLoadingStatus(identifier: string = "global"): boolean {
-    return useSelector((state: State) => state.loading[identifier] > 0);
+    return app.store.loading(state => state[identifier] > 0);
 }

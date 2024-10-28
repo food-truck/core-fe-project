@@ -1,36 +1,28 @@
 import React from "react";
-import {delay, call as rawCall, take, select, cancel, fork, call, put} from "redux-saga/effects";
 import {app} from "../app";
-import {executeAction, type ActionCreators} from "../module";
-import {IDLE_STATE_ACTION, navigationPreventionAction, type State} from "../reducer";
+import {executeAction} from "../module";
 import {Module, type ModuleLifecycleListener} from "./Module";
 import type {Location} from "history";
-import type {RouteComponentProps} from "react-router";
-import type {Task} from "redux-saga";
+import {useMatch} from "react-router-dom";
+import {CoreModuleProxy, eventBus} from "@wonder/core-core";
+import type {RouterState} from "../sliceStores";
+import {getListenActionName} from "../decorator/Subscribe";
 
+type RouteComponentProps = RouterState & {match: ReturnType<typeof useMatch>};
 let startupModuleName: string | null = null;
 
-export class ModuleProxy<M extends Module<any, any>> {
-    constructor(
-        private module: M,
-        private actions: ActionCreators<M>,
-        private moduleName: string
-    ) {}
-
-    getActions(): ActionCreators<M> {
-        return this.actions;
-    }
-
+export class ModuleProxy<M extends Module<any, any>> extends CoreModuleProxy<M> {
     attachLifecycle<P extends object>(ComponentType: React.ComponentType<P>): React.ComponentType<P> {
         const moduleName = this.module.name as string;
+        const thisModule = this.module;
         const lifecycleListener = this.module as ModuleLifecycleListener;
         const modulePrototype = Object.getPrototypeOf(lifecycleListener);
         const actions = this.actions as any;
+        let timer: NodeJS.Timeout;
+        const listenActionName = getListenActionName(moduleName);
 
         return class extends React.PureComponent<P> {
             static displayName = `Module[${moduleName}]`;
-            private lifecycleSagaTask: Task | null = null;
-            private lastDidUpdateSagaTask: Task | null = null;
             private tickCount: number = 0;
             private mountedTime: number = Date.now();
 
@@ -40,12 +32,17 @@ export class ModuleProxy<M extends Module<any, any>> {
                     startupModuleName = moduleName;
                 }
             }
-
             override componentDidMount() {
-                this.lifecycleSagaTask = app.sagaMiddleware.run(this.lifecycleSaga.bind(this));
+                thisModule.moduleStatus = "active";
+                eventBus.emit(listenActionName, {
+                    detail: {
+                        moduleName,
+                    },
+                });
+                this.lifecycle.call(this);
             }
 
-            override componentDidUpdate(prevProps: Readonly<P>) {
+            override async componentDidUpdate(prevProps: Readonly<P>) {
                 const prevLocation = (prevProps as any).location;
                 const props = this.props as RouteComponentProps & P;
                 const currentLocation = props.location;
@@ -59,26 +56,23 @@ export class ModuleProxy<M extends Module<any, any>> {
                  *  Because in "connected-react-router", location from rootState.router.location is not equal to current history.location in reference.
                  */
                 if (currentLocation && currentRouteParams && !this.areLocationsPathNameEqual(currentLocation, prevLocation) && this.hasOwnLifecycle("onPathnameMatched")) {
-                    try {
-                        this.lastDidUpdateSagaTask?.cancel();
-                    } catch (e) {
-                        // In rare case, it may throw error, just ignore
-                    }
-                    this.lastDidUpdateSagaTask = app.sagaMiddleware.run(function* () {
-                        const action = `${moduleName}/@@PATHNAME_MATCHED`;
-                        const startTime = Date.now();
-                        yield rawCall(executeAction, action, lifecycleListener.onPathnameMatched.bind(lifecycleListener), currentRouteParams, currentLocation);
-                        app.logger.info({
-                            action,
-                            elapsedTime: Date.now() - startTime,
-                            info: {
-                                // URL params should not contain any sensitive or complicated objects
-                                route_params: JSON.stringify(currentRouteParams),
-                                history_state: JSON.stringify(currentLocation.state),
-                            },
-                        });
+                    const action = `${moduleName}/@@PATHNAME_MATCHED`;
+                    const startTime = Date.now();
+
+                    executeAction({
+                        actionName: action,
+                        handler: lifecycleListener.onPathnameMatched.bind(lifecycleListener),
+                        payload: [currentRouteParams, currentLocation],
                     });
-                    app.store.dispatch(navigationPreventionAction(false));
+                    app.logger.info({
+                        action,
+                        elapsedTime: Date.now() - startTime,
+                        info: {
+                            // URL params should not contain any sensitive or complicated objects
+                            route_params: JSON.stringify(currentRouteParams),
+                            history_state: JSON.stringify(currentLocation.state),
+                        },
+                    });
                 }
 
                 /**
@@ -89,44 +83,38 @@ export class ModuleProxy<M extends Module<any, any>> {
                  *  Because in "connected-react-router", location from rootState.router.location is not equal to current history.location in reference.
                  */
                 if (currentLocation && currentRouteParams && !this.areLocationsEqual(currentLocation, prevLocation) && this.hasOwnLifecycle("onLocationMatched")) {
-                    try {
-                        this.lastDidUpdateSagaTask?.cancel();
-                    } catch (e) {
-                        // In rare case, it may throw error, just ignore
-                    }
-                    this.lastDidUpdateSagaTask = app.sagaMiddleware.run(function* () {
-                        yield put({type: `@@${moduleName}/@@cancel-saga`});
-                        const action = `${moduleName}/@@LOCATION_MATCHED`;
-                        const startTime = Date.now();
-                        yield rawCall(executeAction, action, lifecycleListener.onLocationMatched.bind(lifecycleListener), currentRouteParams, currentLocation);
-                        app.logger.info({
-                            action,
-                            elapsedTime: Date.now() - startTime,
-                            info: {
-                                // URL params should not contain any sensitive or complicated objects
-                                route_params: JSON.stringify(currentRouteParams),
-                                history_state: JSON.stringify(currentLocation.state),
-                            },
-                        });
+                    const action = `${moduleName}/@@LOCATION_MATCHED`;
+                    const startTime = Date.now();
+                    executeAction({
+                        actionName: action,
+                        handler: lifecycleListener.onLocationMatched.bind(lifecycleListener),
+                        payload: [currentRouteParams, currentLocation],
                     });
-                    app.store.dispatch(navigationPreventionAction(false));
+                    app.logger.info({
+                        action,
+                        elapsedTime: Date.now() - startTime,
+                        info: {
+                            // URL params should not contain any sensitive or complicated objects
+                            route_params: JSON.stringify(currentRouteParams),
+                            history_state: JSON.stringify(currentLocation.state),
+                        },
+                    });
                 }
             }
 
             override componentWillUnmount() {
+                thisModule.moduleStatus = "inactive";
                 if (this.hasOwnLifecycle("onDestroy")) {
-                    app.store.dispatch(actions.onDestroy());
+                    actions.onDestroy();
                 }
 
-                const currentLocation = (this.props as any).location;
-                if (currentLocation) {
-                    // Only cancel navigation prevention if current component is connected to <Route>
-                    app.store.dispatch(navigationPreventionAction(false));
-                }
-
-                app.sagaMiddleware.run(function* () {
-                    yield put({type: `@@${moduleName}/@@cancel-saga`});
+                Object.entries(app.actionControllers).forEach(([actionModuleName, actionControllersMap]) => {
+                    if (actionModuleName === moduleName) {
+                        Object.values(actionControllersMap).forEach(control => control.abort());
+                    }
                 });
+                //clearTimer
+                clearInterval(timer);
 
                 app.logger.info({
                     action: `${moduleName}/@@DESTROY`,
@@ -135,13 +123,6 @@ export class ModuleProxy<M extends Module<any, any>> {
                         staying_second: (Date.now() - this.mountedTime) / 1000,
                     },
                 });
-
-                try {
-                    this.lastDidUpdateSagaTask?.cancel();
-                    this.lifecycleSagaTask?.cancel();
-                } catch (e) {
-                    // In rare case, it may throw error, just ignore
-                }
             }
 
             override render() {
@@ -160,24 +141,28 @@ export class ModuleProxy<M extends Module<any, any>> {
                 return Object.prototype.hasOwnProperty.call(modulePrototype, methodName);
             };
 
-            private *lifecycleSaga() {
-                /**
-                 * CAVEAT:
-                 * Do not use <yield* executeAction> for lifecycle actions.
-                 * It will lead to cancellation issue, which cannot stop the lifecycleSaga as expected.
-                 *
-                 * https://github.com/redux-saga/redux-saga/issues/1986
-                 */
+            private async lifecycle() {
                 const props = this.props as RouteComponentProps & P;
 
                 const enterActionName = `${moduleName}/@@ENTER`;
                 const startTime = Date.now();
-                yield rawCall(executeAction, enterActionName, lifecycleListener.onEnter.bind(lifecycleListener), props);
+
+                executeAction({
+                    actionName: enterActionName,
+                    handler: lifecycleListener.onEnter.bind(lifecycleListener),
+                    payload: [props],
+                });
+
                 app.logger.info({
                     action: enterActionName,
                     elapsedTime: Date.now() - startTime,
                     info: {
-                        component_props: JSON.stringify(props),
+                        component_props: JSON.stringify(props, (_, value) => {
+                            if (React.isValidElement(value)) {
+                                return undefined;
+                            }
+                            return value;
+                        }),
                     },
                 });
 
@@ -185,13 +170,17 @@ export class ModuleProxy<M extends Module<any, any>> {
                     if ("match" in props && "location" in props) {
                         const initialRenderActionName = `${moduleName}/@@PATHNAME_MATCHED`;
                         const startTime = Date.now();
-                        const routeParams = props.match.params;
-                        yield rawCall(executeAction, initialRenderActionName, lifecycleListener.onPathnameMatched.bind(lifecycleListener), routeParams, props.location);
+                        const routeParams = props.match?.params;
+                        executeAction({
+                            actionName: initialRenderActionName,
+                            handler: lifecycleListener.onPathnameMatched.bind(lifecycleListener),
+                            payload: [routeParams, props.location],
+                        });
                         app.logger.info({
                             action: initialRenderActionName,
                             elapsedTime: Date.now() - startTime,
                             info: {
-                                route_params: JSON.stringify(props.match.params),
+                                route_params: JSON.stringify(props.match?.params),
                                 history_state: JSON.stringify(props.location.state),
                             },
                         });
@@ -204,13 +193,17 @@ export class ModuleProxy<M extends Module<any, any>> {
                     if ("match" in props && "location" in props) {
                         const initialRenderActionName = `${moduleName}/@@LOCATION_MATCHED`;
                         const startTime = Date.now();
-                        const routeParams = props.match.params;
-                        yield rawCall(executeAction, initialRenderActionName, lifecycleListener.onLocationMatched.bind(lifecycleListener), routeParams, props.location);
+                        const routeParams = props.match?.params;
+                        executeAction({
+                            actionName: initialRenderActionName,
+                            handler: lifecycleListener.onLocationMatched.bind(lifecycleListener),
+                            payload: [routeParams, props.location],
+                        });
                         app.logger.info({
                             action: initialRenderActionName,
                             elapsedTime: Date.now() - startTime,
                             info: {
-                                route_params: JSON.stringify(props.match.params),
+                                route_params: JSON.stringify(props.match?.params),
                                 history_state: JSON.stringify(props.location.state),
                             },
                         });
@@ -224,31 +217,44 @@ export class ModuleProxy<M extends Module<any, any>> {
                 }
 
                 if (this.hasOwnLifecycle("onTick")) {
-                    yield rawCall(this.onTickWatcherSaga.bind(this));
+                    this.onTickWatcher.call(this);
                 }
             }
 
-            private *onTickWatcherSaga() {
-                let runningIntervalTask: Task = yield fork(this.onTickSaga.bind(this));
-                while (true) {
-                    yield take(IDLE_STATE_ACTION);
-                    yield cancel(runningIntervalTask); // no-op if already cancelled
-                    const isActive: boolean = yield select((state: State) => state.idle.state === "active");
-                    if (isActive) {
-                        runningIntervalTask = yield fork(this.onTickSaga.bind(this));
+            private async onTickWatcher() {
+                this.onTickTask.call(this);
+                // This technique is not recommended for adding state in React Server Components (typically in Next.js 13 and above).
+                // It can lead to unexpected bugs and privacy issues for your users.
+                // For more details, see https://github.com/pmndrs/zustand/discussions/2200
+                app.store.idle.subscribe(
+                    state => state.state,
+                    (idleState, preIdleState) => {
+                        if (preIdleState !== idleState) {
+                            clearInterval(timer);
+                            const isActive = idleState === "active";
+                            if (isActive) {
+                                this.onTickTask();
+                            }
+                        }
                     }
-                }
+                );
             }
 
-            private *onTickSaga() {
+            private async onTickTask() {
                 const tickIntervalInMillisecond = (lifecycleListener.onTick.tickInterval || 5) * 1000;
                 const boundTicker = lifecycleListener.onTick.bind(lifecycleListener);
                 const tickActionName = `${moduleName}/@@TICK`;
-                while (true) {
-                    yield rawCall(executeAction, tickActionName, boundTicker);
+                const tickExecute = async () => {
+                    await executeAction({
+                        actionName: tickActionName,
+                        handler: boundTicker,
+                        payload: [],
+                    });
                     this.tickCount++;
-                    yield delay(tickIntervalInMillisecond);
-                }
+                };
+                tickExecute();
+                clearInterval(timer);
+                timer = setInterval(tickExecute, tickIntervalInMillisecond);
             }
         };
     }

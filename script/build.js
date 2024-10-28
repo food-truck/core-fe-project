@@ -52,7 +52,6 @@ function build() {
 
     if (!isFastMode) {
         checkCodeStyle();
-        test();
         lint();
     }
 
